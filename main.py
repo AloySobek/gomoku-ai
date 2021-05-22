@@ -2,15 +2,13 @@ import os
 import sys
 import pygame
 import logging
-from typing import Tuple
+from typing import Tuple, Optional, List
 from gomoku.game import Game
-import random
 
 logger = logging.getLogger(__name__)
 
 WINDOW_HEIGHT = 800
 WINDOW_WIDTH = 800
-
 
 class Color:
     black = (0,0,0)
@@ -32,6 +30,7 @@ class Controller(object):
 
     def __init__(self, screen,  game: Game):
         super()
+        self.font = pygame.font.SysFont('Comic Sans MS', 30)
         self.screen = screen
         self.game = game
         self.bg = pygame.image.load(os.path.join(os.path.dirname(__file__), "images", "board.jpg"))
@@ -39,9 +38,17 @@ class Controller(object):
         self.plPiece = pygame.image.load(os.path.join(os.path.dirname(__file__), "images", "whitePiece.png"))
         self.pointerImg = pygame.image.load(os.path.join(os.path.dirname(__file__), "images", "pointer.png"))
 
-    def draw(self):
+
+    def draw(self, board: Optional[List[List[int]]] = None, highlight: Optional[List[Tuple[int, int, Tuple[int,int,int]]]] = None):
+        """
+        board - Draw custom board instead of game.board
+        highlight - Highlight pieces at x, y and color of R G B  [(1, 1, (255, 255, 255)), (...), ...]
+        """
+        highlight = highlight or []
+        board = board or self.game.board
+        self.screen.fill(Color.black)
         self.screen.blit(self.bg, (0, 0))
-        for y, row in enumerate(self.game.board):
+        for y, row in enumerate(board):
             for x, v in enumerate(row):
                 if v == 2:
                     self.screen.blit(self.aiPiece, self.coordToPos(x, y))
@@ -50,11 +57,14 @@ class Controller(object):
         pointer = self.posToCoord(*pygame.mouse.get_pos())
         if pointer:
             self.screen.blit(self.pointerImg, self.coordToPos(*pointer))
+        for x, y, color in highlight:
+            pygame.draw.circle(self.screen, color, tuple(map(lambda v: v - self.pHeigth, self.coordToPos(x, y))), self.pHeigth, width=3)
+        pygame.display.update()
 
-    def coordToPos(self, x, y):
+    def coordToPos(self, x, y) -> Tuple[int, int]:
         return int(x*self.pSize + self.offsetX - self.pHeigth), int(y*self.pSize + self.offsetY -self.pHeigth)
 
-    def posToCoord(self, x, y):
+    def posToCoord(self, x, y) -> Optional[Tuple[int, int]]:
         x = x - self.offsetX + self.pHeigth
         y = y - self.offsetY + self.pHeigth
         if x <= 0 or y <= 0:
@@ -89,17 +99,35 @@ class Controller(object):
 
         self.game.set(x, y, 1)
         self.game.next_move()
+        return True
+
+    def waitKey(self, key: str, message=None):
+        # pylint: disable=no-member
+        logger.info("Waiting key: %s message: %s", key, message)
+        pygame.display.set_caption(f"Gomoku (waiting for key press: '{key}')")
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.KEYUP and pygame.key.name(event.key) == key:
+                    logger.debug("Key %s arrived!", key)
+                    pygame.display.set_caption("Gomoku")
+                    return
+
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
 
 
 def main():
+    # pylint: disable=no-member
     pygame.init()
+    pygame.font.init()
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     pygame.display.set_caption("Gomoku")
     screen.fill(Color.black)
     game = Game()
-    #game.board = [[random.randint(0, 2) for i in range(game.board_size)] for j in range(game.board_size)]
     controller = Controller(screen, game)
-
+    game.controller = controller
     while True:
         controller.draw()
         for event in pygame.event.get():
@@ -109,7 +137,6 @@ def main():
                 return
             elif event.type == pygame.MOUSEBUTTONUP:
                 controller.onMouseClick(event.button, *pygame.mouse.get_pos())
-        pygame.display.update()
 
 
 if __name__ == "__main__":

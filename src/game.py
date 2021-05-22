@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-# File              : game.py
-# Author            : Rustam Khafizov <super.rustamm@gmail.com>
-# Date              : 22.05.2021 19:51
-# Last Modified Date: 22.05.2021 20:19
-# Last Modified By  : Rustam Khafizov <super.rustamm@gmail.com>
-
 import sys
 
 class Game:

@@ -61,7 +61,7 @@ class Controller(object):
             return
         cx = int(x / self.pSize)
         cy = int(y / self.pSize)
-        if cx > self.game.board_size or cy > self.game.board_size:
+        if cx > self.game.board_size - 1 or cy > self.game.board_size - 1:
             return
         return cx, cy
 

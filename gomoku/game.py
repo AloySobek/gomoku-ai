@@ -2,6 +2,7 @@ import sys
 
 class Game:
     board_size = 19
+    controller = None
 
     def __init__(self):
         self.board = [[0 for i in range(Game.board_size)] for j in range(Game.board_size)]

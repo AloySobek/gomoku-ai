@@ -2,6 +2,8 @@ import os
 import sys
 import pygame
 import logging
+import json
+from datetime import datetime
 from typing import Tuple, Optional, List
 from gomoku.game import Game
 
@@ -78,6 +80,12 @@ class Controller(object):
     def pieceUnderMouse(self):
         return self.posToCoord(*pygame.mouse.get_pos())
 
+    def onKey(self, key: int):
+        if key == pygame.K_s and pygame.key.get_mods() & pygame.KMOD_CTRL:
+            json.dump(self.game.board, open(f'board_{datetime.now().strftime("%H-%M-%S")}.json', 'w'))
+
+
+
     def onMouseClick(self, button, x, y):
         logger.debug("onMouseClick: code: %s  %s %s", button, x, y)
         if button == Button.LEFT_CLICK:
@@ -126,17 +134,30 @@ def main():
     pygame.display.set_caption("Gomoku")
     screen.fill(Color.black)
     game = Game()
+    try:
+        if len(sys.argv) > 1:
+            game.board = json.load(open(sys.argv[1], 'r'))
+    except:
+        pass
     controller = Controller(screen, game)
     game.controller = controller
     while True:
-        controller.draw()
+        try:
+            controller.draw()
+        except Exception:
+            logger.exception("Draw failed")
         for event in pygame.event.get():
             logger.debug("pygame: event: %s", pygame.event.event_name(event.type))
             if event.type == pygame.QUIT:
-                pygame.quit()
+                pygame.quiAt()
                 return
-            elif event.type == pygame.MOUSEBUTTONUP:
-                controller.onMouseClick(event.button, *pygame.mouse.get_pos())
+            try:
+                if event.type == pygame.MOUSEBUTTONUP:
+                    controller.onMouseClick(event.button, *pygame.mouse.get_pos())
+                elif event.type == pygame.KEYUP:
+                    controller.onKey(event.key)
+            except Exception:
+                logger.exception("Failed to process event")
 
 
 if __name__ == "__main__":

@@ -12,3 +12,9 @@ class Game:
                 if self.board[y][x] == 0:
                     self.board[y][x] = 2
                     return
+
+    def set(self, x, y, value):
+        self.board[y][x] = value
+
+    def is_valid_move(self, x, y, value):
+        return self.board[y][x] == 0

@@ -11,3 +11,4 @@ class Game:
             for x in range(Game.board_size):
                 if self.board[y][x] == 0:
                     self.board[y][x] = 2
+                    return

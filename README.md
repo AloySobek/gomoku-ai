@@ -7,6 +7,7 @@ pypy3 -m ensurepip
 pypy3 -m pip install virtualenv
 pypy3 -m virtualenv .venv
 source ./.venv/bin/activate
+pip install -r requirements.txt
 ```
 
 Minimax with alpha-beta pruning

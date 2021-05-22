@@ -28,6 +28,7 @@ class Controller(object):
     offsetX = 64
     pSize = 37.5
     pHeigth = 37.5 / 2
+    devMode = False
 
 
     def __init__(self, screen,  game: Game):
@@ -83,7 +84,11 @@ class Controller(object):
     def onKey(self, key: int):
         if key == pygame.K_s and pygame.key.get_mods() & pygame.KMOD_CTRL:
             json.dump(self.game.board, open(f'board_{datetime.now().strftime("%H-%M-%S")}.json', 'w'))
-
+        if key == pygame.K_d and pygame.key.get_mods() & pygame.KMOD_CTRL and pygame.key.get_mods() & pygame.KMOD_SHIFT:
+            logger.info("Dev mode switched!")
+            self.devMode = not self.devMode
+        if key == pygame.K_F1:
+            self.game.next_move()
 
 
     def onMouseClick(self, button, x, y):
@@ -97,6 +102,16 @@ class Controller(object):
 
     def makeMove(self):
         p = self.pieceUnderMouse()
+        if self.devMode and p:
+            v = 1
+            if pygame.key.get_mods() & pygame.KMOD_SHIFT:
+                v = 2
+            elif pygame.key.get_mods() & pygame.KMOD_CTRL:
+                v = 0
+            self.game.set(p[0], p[1], v)
+            return
+
+
         if not p:
             logger.debug("Mouse not over valid position!")
             return False
@@ -149,7 +164,7 @@ def main():
         for event in pygame.event.get():
             logger.debug("pygame: event: %s", pygame.event.event_name(event.type))
             if event.type == pygame.QUIT:
-                pygame.quiAt()
+                pygame.quit()
                 return
             try:
                 if event.type == pygame.MOUSEBUTTONUP:
@@ -163,5 +178,18 @@ def main():
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG if os.environ.get("DEBUG") else logging.INFO)
     logger = logging.getLogger(__name__)
+    print("""Welcome to Gomoku!
+
+`Ctrl + Shift + d` - enter dev mode
+
+    - no auto moves for AI
+    - Shift+Click set Black piece
+    - Ctrl+Click remove piece
+    - Click set White piece
+
+`F1` - make AI move
+
+`Ctrl+s` - save current board to file to load it later via first argument
+""")
     main()
 

@@ -15,6 +15,21 @@ pip install -r requirements.txt
 pypy3 main.py
 ```
 
+Hotkeys:
+
+`Ctrl + Shift + d` - enter dev mode
+
+    - no auto moves for AI 
+    - Shift+Click set Black piece 
+    - Ctrl+Click remove piece
+    - Click set White piece
+
+`F1` - make AI move
+
+`Ctrl+s` - save current board to file to load it later via first argument
+
+`export DEBUG=1` - for debug logging
+
 Minimax with alpha-beta pruning
 
 https://medium.com/@LukeASalamone/creating-an-ai-for-gomoku-28a4c84c7a52

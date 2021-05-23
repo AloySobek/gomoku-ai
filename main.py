@@ -10,7 +10,7 @@ from gomoku.game import Game
 logger = logging.getLogger(__name__)
 
 WINDOW_HEIGHT = 800
-WINDOW_WIDTH = 800
+WINDOW_WIDTH = 800 + 400
 
 class Color:
     black = (0,0,0)
@@ -29,17 +29,34 @@ class Controller(object):
     pSize = 37.5
     pHeigth = 37.5 / 2
     devMode = False
+    EVERY_SEC_EVENT = pygame.USEREVENT+1
+    redLight = False
 
 
     def __init__(self, screen,  game: Game):
         super()
-        self.font = pygame.font.SysFont('Comic Sans MS', 30)
+        self.font30 = pygame.font.SysFont('Comic Sans MS', 30)
+        self.font20 = pygame.font.SysFont('Comic Sans MS', 20)
+        self.font10 = pygame.font.SysFont('Comic Sans MS', 10)
         self.screen = screen
         self.game = game
         self.bg = pygame.image.load(os.path.join(os.path.dirname(__file__), "images", "board.jpg"))
         self.aiPiece = pygame.image.load(os.path.join(os.path.dirname(__file__), "images", "blackPiece.png"))
         self.plPiece = pygame.image.load(os.path.join(os.path.dirname(__file__), "images", "whitePiece.png"))
         self.pointerImg = pygame.image.load(os.path.join(os.path.dirname(__file__), "images", "pointer.png"))
+        self.panel = pygame.image.load(os.path.join(os.path.dirname(__file__), "images", "panel.jpg"))
+        self.message = """       Hi there!
+Gomoku will crush you!
+
+Ctrl + Shift + d - enter dev mode
+
+    - no auto moves from me :(
+    - Shift+Click set Black piece
+    - Ctrl+Click remove piece
+    - Click set White piece
+
+F1 - make AI move"""
+
 
 
     def draw(self, board: Optional[List[List[int]]] = None, highlight: Optional[List[Tuple[int, int, Tuple[int,int,int]]]] = None):
@@ -51,6 +68,7 @@ class Controller(object):
         board = board or self.game.board
         self.screen.fill(Color.black)
         self.screen.blit(self.bg, (0, 0))
+        self.screen.blit(self.panel, (800, 0) )
         for y, row in enumerate(board):
             for x, v in enumerate(row):
                 if v == 2:
@@ -62,6 +80,20 @@ class Controller(object):
             self.screen.blit(self.pointerImg, self.coordToPos(*pointer))
         for x, y, color in highlight:
             pygame.draw.circle(self.screen, color, tuple(map(lambda v: v - self.pHeigth, self.coordToPos(x, y))), self.pHeigth, width=3)
+
+        for i, l in enumerate(self.message.splitlines()):
+            self.screen.blit(self.font30.render(l,  False, (0, 222, 0)), (800 + 30, 70 + 20 * i))
+
+        self.screen.blit(self.font20.render(
+            f"Dev mode is {'Active!' if self.devMode else 'Not Active'}",
+            False, (0, 222, 0) if not self.devMode else (222, 0, 0)), (800 + 80, 750))
+        self.screen.blit(self.font20.render(
+            f"My last move took: {getattr(self.game, 'last_ai_time', 0)}ms!",
+            False, (0, 222, 0)), (800 + 80, 700))
+
+        if self.redLight:
+            pygame.draw.circle(self.screen, (200, 0, 0), (1150, 750) ,self.pHeigth, width=0)
+
         pygame.display.update()
 
     def coordToPos(self, x, y) -> Tuple[int, int]:
@@ -77,6 +109,10 @@ class Controller(object):
         if cx > self.game.board_size - 1 or cy > self.game.board_size - 1:
             return
         return cx, cy
+
+    def onUserEvent(self, type_):
+        if type_ == self.EVERY_SEC_EVENT:
+            self.redLight = not self.redLight
 
     def pieceUnderMouse(self):
         return self.posToCoord(*pygame.mouse.get_pos())
@@ -156,6 +192,7 @@ def main():
         pass
     controller = Controller(screen, game)
     game.controller = controller
+    pygame.time.set_timer(controller.EVERY_SEC_EVENT, 4000)
     while True:
         try:
             controller.draw()
@@ -171,6 +208,8 @@ def main():
                     controller.onMouseClick(event.button, *pygame.mouse.get_pos())
                 elif event.type == pygame.KEYUP:
                     controller.onKey(event.key)
+                elif event.type > pygame.USEREVENT:
+                    controller.onUserEvent(event.type)
             except Exception:
                 logger.exception("Failed to process event")
 

@@ -82,13 +82,13 @@ F1 - make AI move"""
             pygame.draw.circle(self.screen, color, tuple(map(lambda v: v - self.pHeigth, self.coordToPos(x, y))), self.pHeigth, width=3)
 
         for i, l in enumerate(self.message.splitlines()):
-            self.screen.blit(self.font30.render(l,  False, (0, 222, 0)), (800 + 30, 70 + 20 * i))
+            self.screen.blit(self.font30.render(l,  False, (0, 222, 0)), (800 + 37, 70 + 20 * i))
 
         self.screen.blit(self.font20.render(
             f"Dev mode is {'Active!' if self.devMode else 'Not Active'}",
             False, (0, 222, 0) if not self.devMode else (222, 0, 0)), (800 + 80, 750))
         self.screen.blit(self.font20.render(
-            f"My last move took: {getattr(self.game, 'last_ai_time', 0)}ms!",
+            f"My last move took: {getattr(self.game, 'last_ai_time', 0)} ms!",
             False, (0, 222, 0)), (800 + 80, 700))
 
         if self.redLight:
@@ -192,7 +192,7 @@ def main():
         pass
     controller = Controller(screen, game)
     game.controller = controller
-    pygame.time.set_timer(controller.EVERY_SEC_EVENT, 4000)
+    # pygame.time.set_timer(controller.EVERY_SEC_EVENT, 4000)
     while True:
         try:
             controller.draw()

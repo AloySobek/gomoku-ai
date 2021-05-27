@@ -1,3 +1,4 @@
+# pylint: disable=no-member
 import os
 import sys
 import pygame
@@ -6,6 +7,7 @@ import json
 from datetime import datetime
 from typing import Tuple, Optional, List
 from gomoku.game import Game
+from gomoku.utils import isFreeTriple, Vec2, P1
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +81,7 @@ F1 - make AI move"""
         if pointer:
             self.screen.blit(self.pointerImg, self.coordToPos(*pointer))
         for x, y, color in highlight:
-            pygame.draw.circle(self.screen, color, tuple(map(lambda v: v - self.pHeigth, self.coordToPos(x, y))), self.pHeigth, width=3)
+            pygame.draw.circle(self.screen, color, tuple(map(lambda v: v + self.pHeigth, self.coordToPos(x, y))), self.pHeigth, width=3)
 
         for i, l in enumerate(self.message.splitlines()):
             self.screen.blit(self.font30.render(l,  False, (0, 222, 0)), (800 + 37, 70 + 20 * i))
@@ -117,6 +119,24 @@ F1 - make AI move"""
     def pieceUnderMouse(self):
         return self.posToCoord(*pygame.mouse.get_pos())
 
+
+    def _debugIsFreeThree(self):
+        h = []
+        for y, row in enumerate(self.game.board):
+            for x, v in enumerate(row):
+                if v != 0:
+                    continue
+                for c, d in [
+                    ((255, 0,   0), Vec2(1, 0)),   # _
+                    ((0, 255,   0), Vec2(0, 1)),   # |
+                    ((0,   0, 255), Vec2(1, 1)),   # \
+                    ((0, 255, 255), Vec2(1, -1)), # /
+                ]:
+                    if self.game.is_valid_move(x, y, P1) and isFreeTriple(self.game.board, Vec2(x, y), d, P1):
+                        h.append((x, y, c))
+        self.draw(highlight=h)
+        self.waitKey("c", "Showing possible Free Triple moves")
+
     def onKey(self, key: int):
         if key == pygame.K_s and pygame.key.get_mods() & pygame.KMOD_CTRL:
             json.dump(self.game.board, open(f'board_{datetime.now().strftime("%H-%M-%S")}.json', 'w'))
@@ -125,7 +145,8 @@ F1 - make AI move"""
             self.devMode = not self.devMode
         if key == pygame.K_F1:
             self.game.next_move()
-
+        if key == pygame.K_F12:
+            self._debugIsFreeThree()
 
     def onMouseClick(self, button, x, y):
         logger.debug("onMouseClick: code: %s  %s %s", button, x, y)
@@ -219,16 +240,17 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     print("""Welcome to Gomoku!
 
-`Ctrl + Shift + d` - enter dev mode
+Ctrl + Shift + d - enter dev mode
 
     - no auto moves for AI
     - Shift+Click set Black piece
     - Ctrl+Click remove piece
     - Click set White piece
 
-`F1` - make AI move
+F1     - make AI move
 
-`Ctrl+s` - save current board to file to load it later via first argument
+Ctrl+s - save current board to file to load it later via first argument
+F12    - debug isFreeTriple
 """)
     main()
 

@@ -1,6 +1,5 @@
 from __future__ import annotations
 from typing import List, NamedTuple, Union
-from enum import Enum
 import sys
 
 def eprint(*args, **kwargs):
@@ -80,11 +79,11 @@ def isFreeTriple(board: List[List[int]], xy: Vec2, dxy: Vec2, v: int) -> bool:
     ... ...1..
     ... ....1.
     ... ......
-    ... '''.strip()), Vec2(2, 1), Vec2(1, 1), Token.PLAYER1)
+    ... '''.strip()), Vec2(2, 1), Vec2(1, 1), P1)
     True
     >>> isFreeTriple(_boardFromStr('''
     ... .11..
-    ... '''.strip()), Vec2(3, 0), Vec2(1, 0), Token.PLAYER1)
+    ... '''.strip()), Vec2(3, 0), Vec2(1, 0), P1)
     True
     >>> isFreeTriple(_boardFromStr('''
     ... .2....
@@ -92,11 +91,11 @@ def isFreeTriple(board: List[List[int]], xy: Vec2, dxy: Vec2, v: int) -> bool:
     ... ...1..
     ... ....1.
     ... ......
-    ... '''.strip()), Vec2(2, 1), Vec2(1, 1), Token.PLAYER1)
+    ... '''.strip()), Vec2(2, 1), Vec2(1, 1), P1)
     False
     >>> isFreeTriple(_boardFromStr('''
     ... .11.2
-    ... '''.strip()), Vec2(3, 0), Vec2(1, 0), Token.PLAYER1)
+    ... '''.strip()), Vec2(3, 0), Vec2(1, 0), P1)
     False
     >>> isFreeTriple(_boardFromStr('''
     ... ......
@@ -104,7 +103,7 @@ def isFreeTriple(board: List[List[int]], xy: Vec2, dxy: Vec2, v: int) -> bool:
     ... ...1..
     ... ......
     ... ......
-    ... '''.strip()), Vec2(3, 3), Vec2(0, 1), Token.PLAYER1)
+    ... '''.strip()), Vec2(3, 3), Vec2(0, 1), P1)
     True
     >>> isFreeTriple(_boardFromStr('''
     ... ......
@@ -112,13 +111,18 @@ def isFreeTriple(board: List[List[int]], xy: Vec2, dxy: Vec2, v: int) -> bool:
     ... ...1..
     ... ......
     ... ......
-    ... '''.strip()), Vec2(2, 1), Vec2(1, 1), Token.PLAYER1)
+    ... '''.strip()), Vec2(2, 1), Vec2(1, 1), P1)
     False
     >>> isFreeTriple(_boardFromStr('''
     ... ..1..
-    ... '''.strip()), Vec2(3, 0), Vec2(1, 0), Token.PLAYER1)
+    ... '''.strip()), Vec2(3, 0), Vec2(1, 0), P1)
+    False
+    >>> isFreeTriple(_boardFromStr('''
+    ... 11...
+    ... '''.strip()), Vec2(2, 0), Vec2(1, 0), P1)
     False
     """
+    # eprint('\n'.join(map(lambda r: "".join(map(str, r)), board)))
     size = len(board[0]) - 1
     def _count(dd):
         res = 0
@@ -126,11 +130,12 @@ def isFreeTriple(board: List[List[int]], xy: Vec2, dxy: Vec2, v: int) -> bool:
         while 42:
             # ...TTT
             #       ^  Blocked!
-            if cur.x > size or cur.y > size:
-                return size + -1
+            if cur.x < 0 or cur.y < 0 or cur.x > size or cur.y > size:
+                # eprint("r: -19")
+                return size * -1
 
             t = board[cur.y][cur.x]
-            #  eprint(f"{dd: 3} | {cur} -> {t: 2} = {res: 2}")
+            # eprint(f"{dd: 3} | {cur} -> {t: 2} = {res: 2}")
 
             # ...TTT.
             #       ^  Free!
@@ -140,13 +145,13 @@ def isFreeTriple(board: List[List[int]], xy: Vec2, dxy: Vec2, v: int) -> bool:
             # ...TTTN
             #       ^  Blocked!
             if t != v:
-                #  eprint("r: -19")
+                # eprint("r: -19")
                 return size * -1
 
             # Count and move forward
             res += 1
             cur = cur.move(dxy, dd)
-        #  eprint(f"r: {res}")
+        # eprint(f"r: {res}")
         return res
     up = _count(1)
     if up < 0:

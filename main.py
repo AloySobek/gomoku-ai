@@ -5,14 +5,23 @@ import pygame
 import logging
 import json
 from datetime import datetime
-from typing import Tuple, Optional, List
+from typing import Tuple, Optional, List, NamedTuple
 from gomoku.game import Game
-from gomoku.utils import isFreeTriple, Vec2, P1
+from gomoku.utils import Vec2, P1, getFreePlacing, getPartialPlacing, isDoubleThree, underCapture, isCapture
 
 logger = logging.getLogger(__name__)
 
 WINDOW_HEIGHT = 800
 WINDOW_WIDTH = 800 + 400
+
+class Highlight(NamedTuple):
+    x: int
+    y: int
+    color: Tuple[int, int, int] = (255, 0 ,0)
+    text: str = ""
+    radius: float = 37.5 / 2
+    width: float = 3
+
 
 class Color:
     black = (0,0,0)
@@ -61,7 +70,7 @@ F1 - make AI move"""
 
 
 
-    def draw(self, board: Optional[List[List[int]]] = None, highlight: Optional[List[Tuple[int, int, Tuple[int,int,int]]]] = None):
+    def draw(self, board: Optional[List[List[int]]] = None, highlight: Optional[List[Highlight]] = None):
         """
         board - Draw custom board instead of game.board
         highlight - Highlight pieces at x, y and color of R G B  [(1, 1, (255, 255, 255)), (...), ...]
@@ -80,8 +89,11 @@ F1 - make AI move"""
         pointer = self.posToCoord(*pygame.mouse.get_pos())
         if pointer:
             self.screen.blit(self.pointerImg, self.coordToPos(*pointer))
-        for x, y, color in highlight:
-            pygame.draw.circle(self.screen, color, tuple(map(lambda v: v + self.pHeigth, self.coordToPos(x, y))), self.pHeigth, width=3)
+        for x, y, color, text, radius, width in highlight:
+            pygame.draw.circle(self.screen, color, tuple(map(lambda v: v + self.pHeigth, self.coordToPos(x, y))), radius, width=width)
+            if text:
+                tx, ty = tuple(map(lambda v: v, self.coordToPos(x, y)))
+                self.screen.blit(self.font30.render(text, False, Color.black, Color.white), (tx, ty))
 
         for i, l in enumerate(self.message.splitlines()):
             self.screen.blit(self.font30.render(l,  False, (0, 222, 0)), (800 + 37, 70 + 20 * i))
@@ -120,22 +132,68 @@ F1 - make AI move"""
         return self.posToCoord(*pygame.mouse.get_pos())
 
 
+    def _debugCapture(self):
+        h = []
+        for y, row in enumerate(self.game.board):
+            for x, v in enumerate(row):
+                if v != 0:
+                    continue
+                for _, d in [
+                    ((255, 0,   0), Vec2(1, 0)),   # _
+                    ((0, 255,   0), Vec2(0, 1)),   # |
+                    ((0,   0, 255), Vec2(1, 1)),   # \
+                    ((0, 255, 255), Vec2(1, -1)),  # /
+                ]:
+                    if not self.game.board[y][x]:
+                        if isCapture(self.game.board, Vec2(x, y), d, P1):
+                            h.append(Highlight(x, y, (0,255,0), f"IC", self.pHeigth, 5))
+                        if underCapture(self.game.board, Vec2(x, y), d, P1):
+                            h.append(Highlight(x, y, Color.black, f"UC", self.pHeigth, 5))
+
+        self.draw(highlight=h)
+        self.waitKey("escape", "Showing under/is capture")
+
+
     def _debugIsFreeThree(self):
         h = []
         for y, row in enumerate(self.game.board):
             for x, v in enumerate(row):
                 if v != 0:
                     continue
-                for c, d in [
+                places = []
+                for _, d in [
                     ((255, 0,   0), Vec2(1, 0)),   # _
                     ((0, 255,   0), Vec2(0, 1)),   # |
                     ((0,   0, 255), Vec2(1, 1)),   # \
-                    ((0, 255, 255), Vec2(1, -1)), # /
+                    ((0, 255, 255), Vec2(1, -1)),  # /
                 ]:
-                    if self.game.is_valid_move(x, y, P1) and isFreeTriple(self.game.board, Vec2(x, y), d, P1):
-                        h.append((x, y, c))
+                    if self.game.is_valid_move(x, y, P1):
+                        fp = getFreePlacing(self.game.board, Vec2(x, y), d, P1)
+
+                        if fp[0]:
+                            places.append(fp)
+                        pp = getPartialPlacing(self.game.board, Vec2(x, y), d, P1)
+
+                        if pp[0]:
+                            places.append((False, pp[1]))
+                places.sort(key=lambda pl: pl[1])
+                for f, s in places:
+                    for cc, ss in (
+                        ((255,0,0),2),
+                        ((0,0,255),3),
+                        ((0,255,0),4),
+                    ):
+                        if ss != s:
+                            continue
+                        if s == 3 and isDoubleThree(self.game.board, Vec2(x,y), P1):
+                            h.append(Highlight(x, y, Color.black, f"DT", self.pHeigth, 5))
+                        elif f:
+                            h.append(Highlight(x, y, cc, f"{ss}", self.pHeigth, 5))
+                        else:
+                            h.append(Highlight(x, y, cc, f"{ss}", self.pHeigth / 2))
+
         self.draw(highlight=h)
-        self.waitKey("c", "Showing possible Free Triple moves")
+        self.waitKey("escape", "Showing possible Free/Partial/DoubleT N moves ")
 
     def onKey(self, key: int):
         if key == pygame.K_s and pygame.key.get_mods() & pygame.KMOD_CTRL:
@@ -145,8 +203,11 @@ F1 - make AI move"""
             self.devMode = not self.devMode
         if key == pygame.K_F1:
             self.game.next_move()
-        if key == pygame.K_F12:
+        elif key == pygame.K_F12:
             self._debugIsFreeThree()
+        elif key == pygame.K_F11:
+            self._debugCapture()
+
 
     def onMouseClick(self, button, x, y):
         logger.debug("onMouseClick: code: %s  %s %s", button, x, y)
@@ -187,10 +248,11 @@ F1 - make AI move"""
         pygame.display.set_caption(f"Gomoku (waiting for key press: '{key}')")
         while True:
             for event in pygame.event.get():
-                if event.type == pygame.KEYUP and pygame.key.name(event.key) == key:
-                    logger.debug("Key %s arrived!", key)
-                    pygame.display.set_caption("Gomoku")
-                    return
+                if event.type == pygame.KEYUP:
+                    logger.debug("Key %s arrived!", pygame.key.name(event.key))
+                    if pygame.key.name(event.key) == key:
+                        pygame.display.set_caption("Gomoku")
+                        return
 
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -250,7 +312,8 @@ Ctrl + Shift + d - enter dev mode
 F1     - make AI move
 
 Ctrl+s - save current board to file to load it later via first argument
-F12    - debug isFreeTriple
+F12    - debug placing
+F11    - debug capture
 """)
     main()
 

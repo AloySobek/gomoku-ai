@@ -7,7 +7,7 @@ import json
 from datetime import datetime
 from typing import Tuple, Optional, List, NamedTuple
 from gomoku.game import Game
-from gomoku.utils import Vec2, P1, P2, getFreePlacing, getPartialPlacing, isDoubleThree, underCapture, isCapture, doCapture
+from gomoku.utils import Vec2, P1, P2, getFreePlacing, getPartialPlacing, isDoubleThree, underCapture, isCapture, doCapture, isWinMove
 
 logger = logging.getLogger(__name__)
 
@@ -239,10 +239,16 @@ F1 - make AI move"""
             return False
         doCapture(self.game.board, Vec2(x, y), P1)
         self.game.set(x, y, P1)
+        logger.info("P1 makes a move: %s", (x, y))
+        if isWinMove(self.game.board, Vec2(x, y), P1):
+            logger.info("P1 win!")
         aimove = self.game.next_move()
+        logger.info("P2 makes a move: %s", aimove)
         if aimove:
             x, y = aimove
             doCapture(self.game.board, Vec2(x, y), P2)
+            if isWinMove(self.game.board, Vec2(x, y), P2):
+                logger.info("P2 win!")
         return True
 
     def waitKey(self, key: str, message=None):

@@ -365,6 +365,18 @@ def isWinMove(board: List[List[int]], xy: Vec2, v: int) -> bool:
     ... 01111.
     ... '''.strip()), Vec2(0, 0), P1)
     True
+    >>> isWinMove(_boardFromStr('''
+    ... 11110.
+    ... '''.strip()), Vec2(4, 0), P1)
+    True
+    >>> isWinMove(_boardFromStr('''
+    ... 22220.
+    ... '''.strip()), Vec2(4, 0), P2)
+    True
+    >>> isWinMove(_boardFromStr('''
+    ... 22210.
+    ... '''.strip()), Vec2(4, 0), P2)
+    False
     """
     for d in ALL_AXIS:
         flat = _getFlat(board, xy, d, v, 6)

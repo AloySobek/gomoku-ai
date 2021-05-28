@@ -163,6 +163,15 @@ _CAPTURE_PATTERNS = _genCapturePatterns()
 _WIN_PATTERNS = _getWinPatterns()
 
 def _getFlat(board: List[List[int]], xy: Vec2, dxy: Vec2, v: int, extent: int) -> str:
+    """Flattens forward diagonal / row / column / backward diagonal for xy
+
+    1..
+    .2.  for xy (1, 1) dxy (1, 1) and extent 2 forms string .121.     from forward diagonal
+    ..1  for xy (2, 2) dxy (1, 1) and extent 3 forms string .121...   from forward diagonal
+         for xy (1, 1) dxy (1, 0) and extent 4 forms string ....2.... from row
+
+    @TODO: We can cache coordinates for each xy for each dxy in to the dict to optimize
+    """
     def get(_xy):
         if (_xy.x < 0 or _xy.y < 0):
             raise IndexError
@@ -190,7 +199,14 @@ def _getFlat(board: List[List[int]], xy: Vec2, dxy: Vec2, v: int, extent: int) -
     return flat
 
 def isCapture(board: List[List[int]], xy: Vec2, dxy: Vec2, v: int) -> bool:
-    """
+    """Test if move xy for player v will capture any opponents tokens
+
+                x012345..
+               y_________
+    given row  0|000221..|  and xy (3, 0) returns true
+    because this move will form 001221.. placement which will capture 22
+    resulting in 001001.. placement
+
     >>> isCapture(_boardFromStr('''
     ... ......1021......
     ... '''.strip()), Vec2(7, 0), Vec2(1, 0), P2)
@@ -212,7 +228,10 @@ def isCapture(board: List[List[int]], xy: Vec2, dxy: Vec2, v: int) -> bool:
     return False
 
 def underCapture(board: List[List[int]], xy: Vec2, dxy: Vec2, v: int) -> bool:
-    """
+    """Test if move xy is placing playes v token in capture position for opponent
+
+    examples of capture player 2 tokens: ..1221.. -> ..1..1.. tow tokens captured
+
     >>> underCapture(_boardFromStr('''
     ... .1....
     ... ..0...
@@ -230,8 +249,7 @@ def underCapture(board: List[List[int]], xy: Vec2, dxy: Vec2, v: int) -> bool:
     return False
 
 def doCapture(board: List[List[int]], xy: Vec2, v: int) -> int:
-    """
-    returns successfull capture count
+    """Returns numer of captures performed on the board board for move xy for player v
 
     >>> doCapture(_boardFromStr('''
     ... .0....
@@ -262,7 +280,8 @@ def doCapture(board: List[List[int]], xy: Vec2, v: int) -> int:
     return result
 
 def getPartialPlacing(board: List[List[int]], xy: Vec2, dxy: Vec2, v: int) -> Optional[Tuple[bool, int]]:
-    """
+    """Returns longest semi-blocked placement of tokens for move xy for player v in direction dxy
+
     >>> getPartialPlacing(_boardFromStr('''
     ... ......
     ... ......
@@ -295,13 +314,15 @@ def getPartialPlacing(board: List[List[int]], xy: Vec2, dxy: Vec2, v: int) -> Op
     flat = _getFlat(board, xy, dxy, v, 7)
     for i in range(4, 1, -1):
         for p in _PARTIAL_PATTERNS[(i, v)]:
+            # NOTE: Slice flattened row to ensure we will not match unrelated tokens
             if p in flat[5-i:-(5-i)]:
                 # eprint('P:', p, "in", flat, "==", p in flat)
                 return True, i
     return False, 0
 
 def getFreePlacing(board: List[List[int]], xy: Vec2, dxy: Vec2, v: int) -> Optional[Tuple[bool, int]]:
-    """
+    """Returns longest non-blocked placement of tokens for move xy for player v in direction dxy
+
     >>> getFreePlacing(_boardFromStr('''
     ... ......
     ... ......
@@ -354,13 +375,15 @@ def getFreePlacing(board: List[List[int]], xy: Vec2, dxy: Vec2, v: int) -> Optio
     flat = _getFlat(board, xy, dxy, v, 7)
     for i in range(4, 1, -1):
         for p in  _FREE_PATTERNS[(i, v)]:
+            # NOTE: Slice flattened row to ensure we will not match unrelated tokens
             if p in flat[5-i:-(5-i)]:
                 # eprint('F:', p, "in", flat, "==", p in flat)
                 return True, i
     return False, 0
 
 def isWinMove(board: List[List[int]], xy: Vec2, v: int) -> bool:
-    """
+    """Check if move xy for player v will produce 5 connected tokens resulting in win
+
     >>> isWinMove(_boardFromStr('''
     ... 01111.
     ... '''.strip()), Vec2(0, 0), P1)

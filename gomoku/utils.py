@@ -151,9 +151,16 @@ def _genCapturePatterns():
         P2: ("2112",)
     }
 
+def _getWinPatterns():
+    return {
+        P1: "11111",
+        P2: "22222"
+    }
+
 _FREE_PATTERNS = _genFreePatterns()
 _PARTIAL_PATTERNS = _genPartialPatterns()
 _CAPTURE_PATTERNS = _genCapturePatterns()
+_WIN_PATTERNS = _getWinPatterns()
 
 def _getFlat(board: List[List[int]], xy: Vec2, dxy: Vec2, v: int, extent: int) -> str:
     def get(_xy):
@@ -351,6 +358,19 @@ def getFreePlacing(board: List[List[int]], xy: Vec2, dxy: Vec2, v: int) -> Optio
                 # eprint('F:', p, "in", flat, "==", p in flat)
                 return True, i
     return False, 0
+
+def isWinMove(board: List[List[int]], xy: Vec2, v: int) -> bool:
+    """
+    >>> isWinMove(_boardFromStr('''
+    ... 01111.
+    ... '''.strip()), Vec2(0, 0), P1)
+    True
+    """
+    for d in ALL_AXIS:
+        flat = _getFlat(board, xy, d, v, 6)
+        if _WIN_PATTERNS[v] in flat:
+            return True
+    return False
 
 
 if __name__ == "__main__":

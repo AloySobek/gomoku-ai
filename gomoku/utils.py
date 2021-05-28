@@ -222,6 +222,38 @@ def underCapture(board: List[List[int]], xy: Vec2, dxy: Vec2, v: int) -> bool:
             return True
     return False
 
+def doCapture(board: List[List[int]], xy: Vec2, v: int) -> int:
+    """
+    returns successfull capture count
+
+    >>> doCapture(_boardFromStr('''
+    ... .0....
+    ... ..2...
+    ... ...2..
+    ... ....1.
+    ... ......
+    ... '''.strip()), Vec2(1, 0), P1)
+    1
+    """
+    result = 0
+
+    # eprint('before capture:', '\n'.join(map(lambda r: "".join(map(str, r)), board)))
+    for d in ALL_AXIS:
+        flat = _getFlat(board, xy, d, v, 4)
+        # eprint("docapture: flat", flat[3:], flat[:-3])
+        if flat[3:].startswith(_CAPTURE_PATTERNS[v][0]):
+            for i in range(1, 3):
+                coord = xy.move(d, i)
+                board[coord.y][coord.x] = EPT
+            result += 1
+        if flat[:-3].startswith(_CAPTURE_PATTERNS[v][0]):
+            for i in range(1, 3):
+                coord = xy.move(d, -i)
+                board[coord.y][coord.x] = EPT
+            result += 1
+    # eprint('after  capture:', '\n'.join(map(lambda r: "".join(map(str, r)), board)))
+    return result
+
 def getPartialPlacing(board: List[List[int]], xy: Vec2, dxy: Vec2, v: int) -> Optional[Tuple[bool, int]]:
     """
     >>> getPartialPlacing(_boardFromStr('''
@@ -319,6 +351,7 @@ def getFreePlacing(board: List[List[int]], xy: Vec2, dxy: Vec2, v: int) -> Optio
                 # eprint('F:', p, "in", flat, "==", p in flat)
                 return True, i
     return False, 0
+
 
 if __name__ == "__main__":
     import doctest

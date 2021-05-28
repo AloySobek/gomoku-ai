@@ -12,7 +12,7 @@ class Game:
             for x in range(Game.board_size):
                 if self.board[y][x] == 0:
                     self.board[y][x] = 2
-                    return
+                    return x, y
 
     def set(self, x, y, value):
         self.board[y][x] = value

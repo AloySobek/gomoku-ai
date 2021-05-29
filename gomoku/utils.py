@@ -50,19 +50,6 @@ class Vec2(NamedTuple):
 
 ALL_AXIS = (Vec2(1, 0), Vec2(0, 1), Vec2(1, 1), Vec2(1, -1))
 
-def moveCoord(xy: Vec2, dxy: Vec2, d) -> Vec2:
-    """
-    >>> moveCoord(Vec2(1, 1), Vec2(1, 0), 1)
-    (2, 1)
-    >>> moveCoord(Vec2(1, 1), Vec2(1, 0), -1)
-    (0, 1)
-    >>> moveCoord(Vec2(1, 1), Vec2(1, 1), 1)
-    (2, 2)
-    >>> moveCoord(Vec2(0, 0), Vec2(1, 1), -1)
-    (-1, -1)
-    """
-    return xy + dxy * d
-
 
 def _boardFromStr(s: str) -> List[List[int]]:
     res = []
@@ -106,7 +93,7 @@ def _genPartialPatterns():
     base = {
         2: ("0xx0",),
         3: ("0xxx0", "0xx0x0", "0x0xx0"),
-        4: ("0xxxx0", "0xxx0x0", "0xx0xx0", "0x0xxx0"),
+        4: ("0xxxx0", "0xxx0x0",),# "0xx0xx0", "0x0xxx0"),
     }
     _free_patterns = {}
     for k, v in base.items():
@@ -137,7 +124,7 @@ def _genFreePatterns():
     base = {
         2: ("0xx0",),
         3: ("0xxx0", "0xx0x0", "0x0xx0"),
-        4: ("0xxxx0", "0xxx0x0", "0xx0xx0", "0x0xxx0"),
+        4: ("0xxxx0",),# "0xxx0x0", "0xx0xx0", "0x0xxx0"),
     }
     _free_patterns = {}
     for k, v in base.items():
@@ -186,6 +173,7 @@ def _getFlat(board: List[List[int]], xy: Vec2, dxy: Vec2, v: int, extent: int) -
                 flat = "[" + flat
             else:
                 flat = '.' + flat
+
         try:
             flat += str(get(xy.move(dxy, +i)))
         except IndexError:
@@ -222,8 +210,8 @@ def isCapture(board: List[List[int]], xy: Vec2, dxy: Vec2, v: int) -> bool:
     """
     flat = _getFlat(board, xy, dxy, v, 4)
     for p in _CAPTURE_PATTERNS[v]:
-        # eprint("capture : ", p, "in", flat)
         if p in flat:
+            # eprint("capture : ", p, "in", flat)
             return True
     return False
 

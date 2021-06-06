@@ -2,6 +2,8 @@ from __future__ import annotations
 from typing import List, NamedTuple, Union, Tuple, Optional
 import sys
 
+from gomoku.vec2 import Vec2
+
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
@@ -10,46 +12,7 @@ P1 = 1
 P2 = 2
 ALL_P = (P1, P2)
 
-class Vec2(NamedTuple):
-    x: int
-    y: int
-
-    def __mul__(self, other: Union[Vec2,  int]) -> Vec2:
-        if isinstance(other, int):
-            return Vec2(self.x * other, self.y * other)
-        return Vec2(self.x * other.x, self.y * other.y)
-
-
-    def __ne__(self, other: Union[Vec2,  int]) -> Vec2:
-        if isinstance(other, int):
-            return Vec2(self.x - other, self.y - other)
-        return Vec2(self.x - other.x, self.y - other.y)
-
-    def __add__(self, other: Union[Vec2,  int]) -> Vec2:
-        if isinstance(other, int):
-            return Vec2(self.x + other, self.y + other)
-        return Vec2(self.x + other.x, self.y + other.y)
-
-    def __repr__(self):
-        return str(self)
-    def __str__(self):
-        return f"({self.x}, {self.y})"
-
-    def move(self, dxy: Vec2, d: int) -> Vec2:
-        """
-        >>> Vec2(1, 1).move(Vec2(1, 0), 1)
-        (2, 1)
-        >>> Vec2(1, 1).move(Vec2(1, 0), -1)
-        (0, 1)
-        >>> Vec2(1, 1).move(Vec2(1, 1), 1)
-        (2, 2)
-        >>> Vec2(0, 0).move(Vec2(1, 1), -1)
-        (-1, -1)
-        """
-        return self + dxy * d
-
 ALL_AXIS = (Vec2(1, 0), Vec2(0, 1), Vec2(1, 1), Vec2(1, -1))
-
 
 def _boardFromStr(s: str) -> List[List[int]]:
     res = []
@@ -399,4 +362,3 @@ def isWinMove(board: List[List[int]], xy: Vec2, v: int) -> bool:
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
-

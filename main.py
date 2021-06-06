@@ -1,13 +1,15 @@
-# pylint: disable=no-member
 import os
 import sys
 import pygame
 import logging
 import json
+
 from datetime import datetime
 from typing import Tuple, Optional, List, NamedTuple
+
 from gomoku.game import Game
-from gomoku.utils import Vec2, P1, P2, getFreePlacing, getPartialPlacing, isDoubleThree, underCapture, isCapture, doCapture, isWinMove
+from gomoku.utils import P1, P2, getFreePlacing, getPartialPlacing, isDoubleThree, underCapture, isCapture, doCapture, isWinMove
+from gomoku.vec2 import Vec2
 
 logger = logging.getLogger(__name__)
 
@@ -67,8 +69,7 @@ Ctrl + Shift + d - enter dev mode
     - Click set White piece
 
 F1 - make AI move"""
-
-
+        self.game.ai_move()
 
     def draw(self, board: Optional[List[List[int]]] = None, highlight: Optional[List[Highlight]] = None):
         """
@@ -76,7 +77,7 @@ F1 - make AI move"""
         highlight - Highlight pieces at x, y and color of R G B  [(1, 1, (255, 255, 255)), (...), ...]
         """
         highlight = highlight or []
-        board = board or self.game.board
+        board = board or self.game.board.board
         self.screen.fill(Color.black)
         self.screen.blit(self.bg, (0, 0))
         self.screen.blit(self.panel, (800, 0) )
@@ -120,7 +121,7 @@ F1 - make AI move"""
             return
         cx = int(x / self.pSize)
         cy = int(y / self.pSize)
-        if cx > self.game.board_size - 1 or cy > self.game.board_size - 1:
+        if cx > self.game.board.size - 1 or cy > self.game.board.size - 1:
             return
         return cx, cy
 
@@ -134,7 +135,7 @@ F1 - make AI move"""
 
     def _debugCapture(self):
         h = []
-        for y, row in enumerate(self.game.board):
+        for y, row in enumerate(self.game.board.board):
             for x, v in enumerate(row):
                 if v != 0:
                     continue
@@ -144,10 +145,10 @@ F1 - make AI move"""
                     ((0,   0, 255), Vec2(1, 1)),   # \
                     ((0, 255, 255), Vec2(1, -1)),  # /
                 ]:
-                    if not self.game.board[y][x]:
-                        if isCapture(self.game.board, Vec2(x, y), d, P1):
+                    if not self.game.board.board[y][x]:
+                        if isCapture(self.game.board.board, Vec2(x, y), d, P1):
                             h.append(Highlight(x, y, (0,255,0), f"IC", self.pHeigth, 5))
-                        if underCapture(self.game.board, Vec2(x, y), d, P1):
+                        if underCapture(self.game.board.board, Vec2(x, y), d, P1):
                             h.append(Highlight(x, y, Color.black, f"UC", self.pHeigth, 5))
 
         self.draw(highlight=h)
@@ -156,7 +157,7 @@ F1 - make AI move"""
 
     def _debugIsFreeThree(self):
         h = []
-        for y, row in enumerate(self.game.board):
+        for y, row in enumerate(self.game.board.board):
             for x, v in enumerate(row):
                 if v != 0:
                     continue
@@ -167,12 +168,12 @@ F1 - make AI move"""
                     ((0,   0, 255), Vec2(1, 1)),   # \
                     ((0, 255, 255), Vec2(1, -1)),  # /
                 ]:
-                    if self.game.is_valid_move(x, y, P1):
-                        fp = getFreePlacing(self.game.board, Vec2(x, y), d, P1)
+                    if self.game.board.at(Vec2(x,y)) == 0:
+                        fp = getFreePlacing(self.game.board.board, Vec2(x, y), d, P1)
 
                         if fp[0]:
                             places.append(fp)
-                        pp = getPartialPlacing(self.game.board, Vec2(x, y), d, P1)
+                        pp = getPartialPlacing(self.game.board.board, Vec2(x, y), d, P1)
 
                         if pp[0]:
                             places.append((False, pp[1]))
@@ -185,7 +186,7 @@ F1 - make AI move"""
                     ):
                         if ss != s:
                             continue
-                        if s == 3 and isDoubleThree(self.game.board, Vec2(x,y), P1):
+                        if s == 3 and isDoubleThree(self.game.board.board, Vec2(x,y), P1):
                             h.append(Highlight(x, y, Color.black, f"DT", self.pHeigth, 5))
                         elif f:
                             h.append(Highlight(x, y, cc, f"{ss}", self.pHeigth, 5))
@@ -202,7 +203,8 @@ F1 - make AI move"""
             logger.info("Dev mode switched!")
             self.devMode = not self.devMode
         if key == pygame.K_F1:
-            self.game.next_move()
+            pass
+            # self.game.next_move()
         elif key == pygame.K_F12:
             self._debugIsFreeThree()
         elif key == pygame.K_F11:
@@ -220,35 +222,35 @@ F1 - make AI move"""
 
     def makeMove(self):
         p = self.pieceUnderMouse()
-        if self.devMode and p:
-            v = 1
-            if pygame.key.get_mods() & pygame.KMOD_SHIFT:
-                v = 2
-            elif pygame.key.get_mods() & pygame.KMOD_CTRL:
-                v = 0
-            self.game.set(p[0], p[1], v)
-            return
-
+        # if self.devMode and p:
+        #     v = 1
+        #     if pygame.key.get_mods() & pygame.KMOD_SHIFT:
+        #         v = 2
+        #     elif pygame.key.get_mods() & pygame.KMOD_CTRL:
+        #         v = 0
+        #     # self.game.board.place_stone(Vec2(p[0], p[1]), True if v == 1 else False)
+        #     return
 
         if not p:
             logger.debug("Mouse not over valid position!")
             return False
         x, y = p
-        if not self.game.is_valid_move(x, y, 1):
+        if self.game.board.at(Vec2(x,y)) != 0:
             logger.debug("Position at %s %s occupied or move not valid! Can't make move!", x, y)
             return False
-        doCapture(self.game.board, Vec2(x, y), P1)
-        self.game.set(x, y, P1)
-        logger.info("P1 makes a move: %s", (x, y))
-        if isWinMove(self.game.board, Vec2(x, y), P1):
-            logger.info("P1 win!")
-        aimove = self.game.next_move()
-        logger.info("P2 makes a move: %s", aimove)
-        if aimove:
-            x, y = aimove
-            doCapture(self.game.board, Vec2(x, y), P2)
-            if isWinMove(self.game.board, Vec2(x, y), P2):
-                logger.info("P2 win!")
+        # doCapture(self.game.board.board, Vec2(x, y), P1)
+        move = Vec2(x,y)
+        self.game.player_move(move)
+        # logger.info("P1 makes a move: %s", (x, y))
+        # if isWinMove(self.game.board.board, Vec2(x, y), P1):
+            # logger.info("P1 win!")
+        self.game.ai_move()
+        # logger.info("P2 makes a move: %s", aimove)
+        # if aimove:
+        #     x, y = aimove
+        #     doCapture(self.game.board.board, Vec2(x, y), P2)
+        #     if isWinMove(self.game.board.board, Vec2(x, y), P2):
+        #         logger.info("P2 win!")
         return True
 
     def waitKey(self, key: str, message=None):
@@ -325,4 +327,3 @@ F12    - debug placing
 F11    - debug capture
 """)
     main()
-

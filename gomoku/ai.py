@@ -15,11 +15,11 @@ class Ai:
                     board.place_stone(i, False)
                     board_analyzer.add_surroundings(board, i)
                     max_h = max(max_h, self.minimax(depth-1, alpha, beta, board, board_analyzer, False))
-                    if max_h >= beta:
-                        break
-                    alpha = max(alpha, max_h)
                     board_analyzer.remove_surroundings(board, i)
                     board.remove_stone(i, False)
+                    alpha = max(alpha, max_h)
+                    if max_h >= beta:
+                        break
             return max_h
         else:
             min_h = float("inf")
@@ -28,9 +28,9 @@ class Ai:
                     board.place_stone(i, True)
                     board_analyzer.add_surroundings(board, i)
                     min_h = min(min_h, self.minimax(depth-1, alpha, beta, board, board_analyzer, True))
-                    if min_h <= alpha:
-                        break
-                    beta = min(beta, min_h)
                     board_analyzer.remove_surroundings(board, i)
                     board.remove_stone(i, True)
+                    beta = min(beta, min_h)
+                    if min_h <= alpha:
+                        break
             return min_h

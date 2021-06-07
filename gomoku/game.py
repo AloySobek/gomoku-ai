@@ -22,12 +22,13 @@ class Game:
                 self.board.place_stone(i, True)
                 self.board_analyzer.add_surroundings(self.board, i)
                 h = self.ai.minimax(3, float("-inf"), float("inf"), self.board, self.board_analyzer, True)
+                self.board_analyzer.remove_surroundings(self.board, i)
+                self.board.remove_stone(i, True)
                 if h >= max_h:
                     max_h = h
                     move = i
-                self.board_analyzer.remove_surroundings(self.board, i)
-                self.board.remove_stone(i, True)
         self.board.place_stone(move, True)
+        self.board_analyzer.add_surroundings(self.board, move)
         return move
 
     def player_move(self, point: Vec2):

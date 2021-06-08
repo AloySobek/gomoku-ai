@@ -35,17 +35,18 @@ set(PROJECT_SOURCES
         src/mainwindow.cpp
         src/mainwindow.ui
         src/Scene.cpp
+        src/Token.cpp
+        src/Game.cpp
+        include/Token.h
+        include/Game.h
         include/Scene.h
         include/mainwindow.h
-        src/Token.cpp
-        include/Token.h
-        src/Game.cpp
-        include/Game.h
 
         src/board.cpp
         src/game.cpp
         src/ai.cpp
-)
+        include/gomoku.hpp
+        )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
   qt_add_executable(${PROJECT_NAME}

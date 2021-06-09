@@ -41,6 +41,7 @@ public slots:
     void onActionSave();
     void onActionDevMode();
     void onActionShowMask();
+    void onActionPvPMode();
     void SetAiTitle();
 };
 

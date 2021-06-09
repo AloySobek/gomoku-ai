@@ -50,6 +50,7 @@ public:
     const int pHeight = 40 / 2;
     bool devMode = false;
     bool showMask = false;
+    bool pvpMode = false;
 
     explicit Scene(Game *game, QObject *parent = nullptr);
     ~Scene() override;

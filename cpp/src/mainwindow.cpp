@@ -20,6 +20,7 @@ MainWindow::MainWindow(Game *game, QWidget *parent)
     connect(ui->actionDevMode, SIGNAL(toggled(bool)), this, SLOT(onActionDevMode()));
     connect(ui->actionDevMode, SIGNAL(toggled(bool)), this, SLOT(SetAiTitle()));
     connect(ui->actionShowMask, SIGNAL(toggled(bool)), this, SLOT(onActionShowMask()));
+    connect(ui->actionPvPMode, SIGNAL(toggled(bool)), this, SLOT(onActionPvPMode()));
 
     ui->graphicsView->setScene(scene);
     ui->graphicsView->setMouseTracking(true);
@@ -151,5 +152,11 @@ void MainWindow::SetAiTitle() {
 void MainWindow::onActionShowMask() {
     scene->showMask = ui->actionShowMask->isChecked();
     qDebug() << "onActionShowMask" << scene->showMask;
+    scene->reset();
+}
+
+void MainWindow::onActionPvPMode() {
+    scene->pvpMode = ui->actionPvPMode->isChecked();
+    qDebug() << "onActionPvPMode" << scene->pvpMode;
     scene->reset();
 }

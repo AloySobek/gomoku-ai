@@ -49,6 +49,7 @@ public:
     const int pSize = 40;
     const int pHeight = 40 / 2;
     bool devMode = false;
+    bool showMask = false;
 
     explicit Scene(Game *game, QObject *parent = nullptr);
     ~Scene() override;

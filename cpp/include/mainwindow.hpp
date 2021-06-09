@@ -40,6 +40,7 @@ public slots:
     void onActionLoad();
     void onActionSave();
     void onActionDevMode();
+    void onActionShowMask();
     void SetAiTitle();
 };
 

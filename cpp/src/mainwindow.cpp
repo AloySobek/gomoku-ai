@@ -19,6 +19,7 @@ MainWindow::MainWindow(Game *game, QWidget *parent)
     connect(ui->actionSave, SIGNAL(triggered(bool)), this, SLOT(onActionSave()));
     connect(ui->actionDevMode, SIGNAL(toggled(bool)), this, SLOT(onActionDevMode()));
     connect(ui->actionDevMode, SIGNAL(toggled(bool)), this, SLOT(SetAiTitle()));
+    connect(ui->actionShowMask, SIGNAL(toggled(bool)), this, SLOT(onActionShowMask()));
 
     ui->graphicsView->setScene(scene);
     ui->graphicsView->setMouseTracking(true);
@@ -145,4 +146,10 @@ void MainWindow::SetAiTitle() {
                 scene->devMode ? "<span style=\" color:#cc0000;\">True</span>" : "False"
         )
     );
+}
+
+void MainWindow::onActionShowMask() {
+    scene->showMask = ui->actionShowMask->isChecked();
+    qDebug() << "onActionShowMask" << scene->showMask;
+    scene->reset();
 }

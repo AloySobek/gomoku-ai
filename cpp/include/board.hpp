@@ -35,10 +35,10 @@ public:
     void reset();
     void print();
 
+    int32_t *move_map{new int32_t[BOARD_SIZE * BOARD_SIZE]};
 private:
     int32_t *black_board{new int32_t[BOARD_SIZE]};
     int32_t *white_board{new int32_t[BOARD_SIZE]};
-    int32_t *move_map{new int32_t[BOARD_SIZE * BOARD_SIZE]};
 };
 
 #endif

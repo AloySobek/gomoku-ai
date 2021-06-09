@@ -154,7 +154,7 @@ void Scene::reset() {
             getToken(x, y)->setDef({
               Scene::tokenColorFromInt(game->getToken(x, y)),
               QColor(Qt::transparent),
-              QString()
+              showMask ? QString::number(game->board.move_map[GSIZE * y + x]) : QString()
             });
         }
     }

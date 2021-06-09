@@ -22,9 +22,9 @@ public:
     bool setToken(int8_t x, int8_t y, int8_t v);
     Move predictMove(int8_t v);
     void reset();
+    Board board{Board()};
 
 private:
-    Board board{Board()};
 };
 
 #endif

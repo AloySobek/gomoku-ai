@@ -9,9 +9,10 @@
 #include <QDebug>
 #include <QUrl>
 #include <QPixmap>
-#include "Token.h"
-#include "Scene.h"
-#include <Game.h>
+
+#include "Token.hpp"
+#include "Scene.hpp"
+#include "game.hpp"
 
 
 QT_BEGIN_NAMESPACE

@@ -1,35 +1,40 @@
-#include "gomoku.hpp"
-#include <limits>
-#include <locale>
+#include "game.hpp"
+#include <chrono>
 
-void ai_move(board_t *board)
+int8_t Game::getToken(int8_t x, int8_t y)
 {
-    int32_t max_h = std::numeric_limits<int32_t>::min();
-    int32_t alpha = std::numeric_limits<int32_t>::min();
-    int32_t beta = std::numeric_limits<int32_t>::max();
-    int16_t move_x{0};
-    int16_t move_y{0};
-    int32_t h;
-
-    for (uint16_t y{0}; y < BOARD_SIZE; ++y)
-        for (uint16_t x{0}; x < BOARD_SIZE; ++x)
-            if (get_token(board, x, y) == EMPTY)
-                if (board->move_map[y * BOARD_SIZE + x])
-                {
-                    place_stone_on_board(board, x, y, 1);
-                    h = minimax(3, &alpha, &beta, board, 1);        
-                    remove_stone_from_board(board, x, y, 1);
-                    if (h >= max_h)
-                    {
-                        max_h = h;
-                        move_x = x;
-                        move_y = y;
-                    }
-                }
-    place_stone_on_board(board, move_x, move_y, 1);
+    return (board.get_stone(x, y));
 }
 
-int8_t player_move(board_t *board, int16_t x, int16_t y)
+bool Game::setToken(int8_t x, int8_t y, int8_t v)
 {
-    return (place_stone_on_board(board, x, y, 0));
+    if (v == BLACK_STONE)
+        return (board.place_stone_on_board(x,y,true));
+    else if (v == WHITE_STONE)
+        return (board.place_stone_on_board(x,y,false));
+    else
+        return (board.remove_stone_from_board(x,y,true));
+}
+
+Move Game::predictMove(int8_t v)
+{
+    int32_t move;
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    if (v == BLACK_STONE)
+        move = board.ai_move(true);
+    else
+        move = board.ai_move(false);
+
+    auto finish = std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<double> elapsed = finish - start;
+
+    return Move(true, (move & 0xFF), (move & 0xFF10) >> 8, v, elapsed.count());
+}
+
+void Game::reset()
+{
+    board.reset();
 }

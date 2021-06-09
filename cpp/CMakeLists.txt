@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # set(CMAKE_CXX_FLAGS "-Werror -Wall -Wextra")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-
+# set(CMAKE_EXE_LINKER_FLAGS "-nostartfiles")
 
 # QtCreator supports the following variables for Android, which are identical to qmake Android variables.
 # Check https://doc.qt.io/qt/deployment-android.html for more information.
@@ -36,16 +36,14 @@ set(PROJECT_SOURCES
         src/mainwindow.ui
         src/Scene.cpp
         src/Token.cpp
-        src/Game.cpp
-        include/Token.h
-        include/Game.h
-        include/Scene.h
-        include/mainwindow.h
+        include/Token.hpp
+        include/Scene.hpp
+        include/mainwindow.hpp
 
         src/board.cpp
         src/game.cpp
-        src/ai.cpp
-        include/gomoku.hpp
+        include/game.hpp
+        include/board.hpp
         )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

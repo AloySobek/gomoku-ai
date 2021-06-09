@@ -10,7 +10,8 @@
 #include <QWidget>
 #include <QRectF>
 #include <QPen>
-#include "Scene.h"
+
+#include "Scene.hpp"
 
 class Token : public QGraphicsItem {
 public:

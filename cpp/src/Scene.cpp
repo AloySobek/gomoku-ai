@@ -1,5 +1,5 @@
-#include <Token.h>
-#include "Scene.h"
+#include "Token.hpp"
+#include "Scene.hpp"
 
 void Scene::drawBackground(QPainter *painter, const QRectF &rect) {
     QGraphicsScene::drawBackground(painter, rect);
@@ -30,8 +30,6 @@ Scene::Scene(Game *game, QObject *parent)
     }
     reset();
 }
-
-
 
 Scene::~Scene() {
     for (const auto &item : items()) {
@@ -88,9 +86,9 @@ void Scene::setToken(int x, int y, Scene::TokenDef td) {
 Scene::TokenColor Scene::tokenColorFromInt(int v) {
     switch (v) {
         case 1:
-            return Scene::WHITE;
-        case 2:
             return Scene::BLACK;
+        case 2:
+            return Scene::WHITE;
         default:
             return Scene::EMPTY;
     }

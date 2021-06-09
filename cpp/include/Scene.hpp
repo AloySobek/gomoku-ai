@@ -16,7 +16,8 @@
 #include <QPointF>
 #include <QColor>
 #include <utility>
-#include "Game.h"
+
+#include "game.hpp"
 
 class Token;
 
@@ -25,8 +26,8 @@ public:
     Move lastPredictedMove;
     enum TokenColor {
         EMPTY,
-        WHITE,
         BLACK,
+        WHITE,
     };
     static TokenColor tokenColorFromInt(int v);
     static int intFromTokenColor(TokenColor v);

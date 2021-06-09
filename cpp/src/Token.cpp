@@ -2,9 +2,9 @@
 // Created by misha on 07.06.2021.
 //
 
-#include "Token.h"
-
 #include <utility>
+
+#include "Token.hpp"
 
 void Token::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
     painter->save();

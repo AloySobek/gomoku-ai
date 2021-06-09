@@ -1,9 +1,10 @@
-#include <Token.h>
 #include <QJsonArray>
-#include <Game.h>
-#include "include/mainwindow.h"
+
+#include "mainwindow.hpp"
 #include "./ui_mainwindow.h"
-#include "Scene.h"
+#include "Scene.hpp"
+#include "Token.hpp"
+#include "game.hpp"
 
 MainWindow::MainWindow(Game *game, QWidget *parent)
     : QMainWindow(parent)

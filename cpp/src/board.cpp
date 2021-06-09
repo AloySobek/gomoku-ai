@@ -50,52 +50,21 @@ bool Board::place_stone_on_board(int8_t x, int8_t y, bool is_black, uint8_t *cap
             if (captures)
             {
                 if (y-3 >= 0 && (white_board[y-3] & black_board[y-2] & black_board[y-1] & (0x40000 >> x)))
-                {
-                    std::cout << "0" << std::endl;
                     remove_stone_from_board(x,y-1), remove_stone_from_board(x,y-2), *captures |= 0x1;
-                }
-
                 if (y-3 >= 0 && x+3 < BOARD_SIZE && ((white_board[y-3] << 3) & (black_board[y-2] << 2) & (black_board[y-1] << 1) & (0x40000 >> x)))
-                {
-                    std::cout << "1" << std::endl;
                     remove_stone_from_board(x+1,y-1), remove_stone_from_board(x+2,y-2), *captures |= 0x2;
-                }
-
                 if (x+3 < BOARD_SIZE && ((white_board[y] << 3) & (black_board[y] << 2) & (black_board[y] << 1) & (0x40000 >> x)))
-                {
-                    std::cout << "2" << std::endl;
                     remove_stone_from_board(x+1,y), remove_stone_from_board(x+2,y), *captures |= 0x4;
-                }
-
                 if (y+3 < BOARD_SIZE && x+3 < BOARD_SIZE && ((white_board[y+3] << 3) & (black_board[y+2] << 2) & (black_board[y+1] << 1) & (0x40000 >> x)))
-                {
-                    std::cout << "3" << std::endl;
                     remove_stone_from_board(x+1,y+1), remove_stone_from_board(x+2,y+2), *captures |= 0x8;
-                }
-
                 if (y+3 < BOARD_SIZE && (white_board[y+3] & black_board[y+2] & black_board[y+1] & (0x40000 >> x)))
-                {
-                    std::cout << "4" << std::endl;
                     remove_stone_from_board(x,y+1), remove_stone_from_board(x,y+2), *captures |= 0x10;
-                }
-
                 if (y+3 < BOARD_SIZE && x-3 >= 0 && ((white_board[y+3] >> 3) & (black_board[y+2] >> 2) & (black_board[y+1] >> 1) & (0x40000 >> x)))
-                {
-                    std::cout << "5" << std::endl;
                     remove_stone_from_board(x-1,y+1), remove_stone_from_board(x-2,y+2), *captures |= 0x20;
-                }
-
                 if (x-3 >= 0 && ((white_board[y] >> 3) & (black_board[y] >> 2) & (black_board[y] >> 1) & (0x40000 >> x)))
-                {
-                    std::cout << "6" << std::endl;
                     remove_stone_from_board(x-1,y), remove_stone_from_board(x-2,y), *captures |= 0x40;
-                }
-
                 if (y-3 >= 0 && x-3 >= 0 && ((white_board[y-3] >> 3) & (black_board[y-2] >> 2) & (black_board[y-1] >> 1) & (0x40000 >> x)))
-                {
-                    std::cout << "7" << std::endl;
                     remove_stone_from_board(x-1,y-1), remove_stone_from_board(x-2,y-2), *captures |= 0x80;
-                }
             }
         }
 
@@ -176,7 +145,7 @@ int32_t Board::eval(bool is_black)
 {
     int32_t score{0};
 
-    five_in_a_row(is_black);
+    /* five_in_a_row(is_black); */
 
     score += std::rand() % 200000;
 
@@ -202,7 +171,7 @@ int32_t Board::ai_move(bool is_black)
                     uint8_t captures{0};
 
                     place_stone_on_board(x, y, is_black, &captures);
-                    h = minimax(2, &alpha, &beta, true, is_black);
+                    h = minimax(3, &alpha, &beta, true, is_black);
                     remove_stone_from_board(x, y, is_black, &captures);
                     
                     if (h >= max_h)
@@ -218,7 +187,7 @@ int32_t Board::ai_move(bool is_black)
 
 int32_t Board::minimax(int8_t depth, int32_t *alpha, int32_t *beta, bool maximizer, bool is_black)
 {
-    if (depth == 0 or five_in_a_row(is_black))
+    if (depth == 0)// or five_in_a_row(is_black))
         return (eval(is_black) * (maximizer ? 1 : -1));
     if (maximizer)
     {

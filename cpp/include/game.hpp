@@ -22,7 +22,6 @@ public:
     Move predictMove(int8_t v);
     void reset();
     Board board{Board()};
-
 private:
 };
 

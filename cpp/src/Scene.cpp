@@ -1,5 +1,6 @@
 #include "Token.hpp"
 #include "Scene.hpp"
+#include "Patterns.hpp"
 
 void Scene::drawBackground(QPainter *painter, const QRectF &rect) {
     QGraphicsScene::drawBackground(painter, rect);
@@ -173,4 +174,5 @@ void Scene::reset() {
         }
     }
     update();
+    emit resetted();
 }

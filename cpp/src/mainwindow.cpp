@@ -1,4 +1,5 @@
 #include <QJsonArray>
+#include <Patterns.hpp>
 
 #include "mainwindow.hpp"
 #include "./ui_mainwindow.h"
@@ -18,9 +19,13 @@ MainWindow::MainWindow(Game *game, QWidget *parent)
     connect(ui->actionLoad, SIGNAL(triggered(bool)), this, SLOT(onActionLoad()));
     connect(ui->actionSave, SIGNAL(triggered(bool)), this, SLOT(onActionSave()));
     connect(ui->actionDevMode, SIGNAL(toggled(bool)), this, SLOT(onActionDevMode()));
-    connect(ui->actionDevMode, SIGNAL(toggled(bool)), this, SLOT(SetAiTitle()));
+    connect(ui->actionDevMode, SIGNAL(toggled(bool)), this, SLOT(reset()));
     connect(ui->actionShowMask, SIGNAL(toggled(bool)), this, SLOT(onActionShowMask()));
     connect(ui->actionPvPMode, SIGNAL(toggled(bool)), this, SLOT(onActionPvPMode()));
+    connect(ui->actionShowFreeTow, SIGNAL(triggered(bool)), this, SLOT(onActionShowFreeTow()));
+    connect(ui->actionShowFreeThree, SIGNAL(triggered(bool)), this, SLOT(onActionShowFreeThree()));
+    connect(ui->actionShowFreeFour, SIGNAL(triggered(bool)), this, SLOT(onActionShowFreeFour()));
+    connect(scene, SIGNAL(resetted()), this, SLOT(reset()));
 
     ui->graphicsView->setScene(scene);
     ui->graphicsView->setMouseTracking(true);
@@ -139,11 +144,13 @@ void MainWindow::SetAiTitle() {
                 "<h1>Hi there!</h1>"
                 "<p>Gomoku will crush you!</p>"
                 "<p>Last Move took: %1 sec</p>"
-                "<p>Game in dev mode: %2 </p>"
+                "<p>Prune count: %2 </p>"
+                "<p>Game in dev mode: %3 </p>"
                 "</body></html>"
         )
         .arg(
                 QString::number(scene->lastPredictedMove.tookSecond, 'g', 4),
+                QString::number(scene->game->board.prunedCount),
                 scene->devMode ? "<span style=\" color:#cc0000;\">True</span>" : "False"
         )
     );
@@ -159,4 +166,108 @@ void MainWindow::onActionPvPMode() {
     scene->pvpMode = ui->actionPvPMode->isChecked();
     qDebug() << "onActionPvPMode" << scene->pvpMode;
     scene->reset();
+}
+
+void MainWindow::onActionShowFreeFour() {
+    for (int y = 0; y < GSIZE; ++y) {
+        for (int x = 0; x < GSIZE; ++x) {
+            if (game->getToken(x, y))
+                continue;
+            auto match = false;
+            for (const auto &dxy : ALL_DIRS) {
+                char flat[BOARD_SIZE];
+                Patterns::getFlat(
+                        x, y,
+                        dxy[0], dxy[1],
+                        Scene::WHITE, 5,
+                        game->board.black_board,
+                        game->board.white_board,
+                        flat
+                );
+                if (Patterns::isFourFree(Scene::WHITE, flat)) {
+                    match = true;
+                    break;
+                }
+            }
+            auto t = scene->getToken(x, y);
+            t->setDef({
+                              t->def.color,
+                              QColor(!match ? Qt::transparent : Qt::yellow),
+                              t->def.text}
+            );
+            t->update();
+        }
+    }
+    scene->update();
+}
+
+void MainWindow::onActionShowFreeTow() {
+    for (int y = 0; y < GSIZE; ++y) {
+        for (int x = 0; x < GSIZE; ++x) {
+            if (game->getToken(x, y))
+                continue;
+            auto match = false;
+            for (const auto &dxy : ALL_DIRS) {
+                char flat[BOARD_SIZE];
+                Patterns::getFlat(
+                        x, y,
+                        dxy[0], dxy[1],
+                        Scene::WHITE, 3,
+                        game->board.black_board,
+                        game->board.white_board,
+                        flat
+                );
+                if (Patterns::isTowFree(Scene::WHITE, flat)) {
+                    match = true;
+                    break;
+                }
+            }
+            auto t = scene->getToken(x, y);
+            t->setDef({
+                              t->def.color,
+                              QColor(!match ? Qt::transparent : Qt::yellow),
+                              t->def.text}
+            );
+            t->update();
+        }
+    }
+    scene->update();
+}
+
+void MainWindow::onActionShowFreeThree() {
+    for (int y = 0; y < GSIZE; ++y) {
+        for (int x = 0; x < GSIZE; ++x) {
+            auto t = scene->getToken(x, y);
+            if (game->getToken(x, y))
+                continue;
+            auto match = false;
+            for (const auto &dxy : ALL_DIRS) {
+                char flat[BOARD_SIZE];
+                Patterns::getFlat(
+                        x, y,
+                        dxy[0], dxy[1],
+                        Scene::WHITE, 5,
+                        game->board.black_board,
+                        game->board.white_board,
+                        flat
+                );
+                if (Patterns::isThreeFree(Scene::WHITE, flat)) {
+                    match = true;
+                    break;
+                }
+            }
+
+            t->setDef({
+                              t->def.color,
+                              QColor(!match ? Qt::transparent : Qt::yellow),
+                              t->def.text}
+            );
+            t->update();
+        }
+    }
+    scene->update();
+}
+
+void MainWindow::reset() {
+    SetAiTitle();
 }

@@ -155,6 +155,11 @@ int main() {
         cout << "FPT[3] = " << item << endl;
     }
     REPORT("getColumn")
+
+    char n[7] = "0110";
+    char s[25] = "[000000000011000000000]";
+    cout << "strstr: " << n << " & " << s << strstr("0110", "000111000Hello") << endl;
+
 //    for (int i = 0; i < LEN; ++i) {
 //        std::bitset<LEN> x(getColumn(b, i));
 //        std::cout << "column: " << i << '=' << x << std::endl;

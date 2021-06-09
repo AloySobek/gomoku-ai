@@ -17,6 +17,7 @@
 class Board
 {
 public:
+    uint64_t prunedCount = 0;
     Board()
     {
         move_map[BOARD_SIZE / 2 * BOARD_SIZE + BOARD_SIZE / 2] = 1;
@@ -37,9 +38,9 @@ public:
     void print();
 
     int32_t *move_map{new int32_t[BOARD_SIZE * BOARD_SIZE]};
-private:
     int32_t *black_board{new int32_t[BOARD_SIZE]};
     int32_t *white_board{new int32_t[BOARD_SIZE]};
+private:
 };
 
 #endif

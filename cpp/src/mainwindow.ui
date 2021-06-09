@@ -89,6 +89,10 @@ background-color: rgba(255, 255, 255, 0);</string>
     <addaction name="separator"/>
     <addaction name="actionShowMask"/>
     <addaction name="actionPvPMode"/>
+    <addaction name="separator"/>
+    <addaction name="actionShowFreeTow"/>
+    <addaction name="actionShowFreeThree"/>
+    <addaction name="actionShowFreeFour"/>
    </widget>
    <addaction name="menuGame"/>
    <addaction name="menuFile"/>
@@ -151,6 +155,30 @@ background-color: rgba(255, 255, 255, 0);</string>
    </property>
    <property name="text">
     <string>PvP Mode</string>
+   </property>
+  </action>
+  <action name="actionShowFreeTow">
+   <property name="text">
+    <string>Show Free Tow</string>
+   </property>
+   <property name="shortcut">
+    <string>F2</string>
+   </property>
+  </action>
+  <action name="actionShowFreeThree">
+   <property name="text">
+    <string>Show Free Three</string>
+   </property>
+   <property name="shortcut">
+    <string>F3</string>
+   </property>
+  </action>
+  <action name="actionShowFreeFour">
+   <property name="text">
+    <string>Show Free Four</string>
+   </property>
+   <property name="shortcut">
+    <string>F4</string>
    </property>
   </action>
  </widget>

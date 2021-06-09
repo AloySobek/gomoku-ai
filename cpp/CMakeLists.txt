@@ -47,6 +47,8 @@ set(PROJECT_SOURCES
         src/game.cpp
         include/game.hpp
         include/board.hpp
+        src/Patterns.cpp
+        include/Patterns.hpp
         )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

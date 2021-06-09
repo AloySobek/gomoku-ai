@@ -28,6 +28,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(Game *game, QWidget *parent = nullptr);
     ~MainWindow() override;
+    void SetAiTitle();
 
 private:
     Ui::MainWindow *ui;
@@ -42,7 +43,10 @@ public slots:
     void onActionDevMode();
     void onActionShowMask();
     void onActionPvPMode();
-    void SetAiTitle();
+    void onActionShowFreeFour();
+    void onActionShowFreeTow();
+    void onActionShowFreeThree();
+    void reset();
 };
 
 #endif // MAINWINDOW_H

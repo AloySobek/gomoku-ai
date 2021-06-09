@@ -22,6 +22,7 @@
 class Token;
 
 class Scene : public QGraphicsScene {
+    Q_OBJECT
 public:
     Move lastPredictedMove;
     enum TokenColor {
@@ -62,7 +63,6 @@ public:
     void setBoard(TokenDef tks[GSIZE * GSIZE]);
     void setToken(int x, int y, TokenDef td);
     Token* getToken(int x, int y);
-    void reset();
 private:
     Token* tokens[GSIZE][GSIZE]{nullptr};
     QPixmap bg;
@@ -72,5 +72,9 @@ private:
 protected:
     void drawBackground(QPainter *painter, const QRectF &rect) override;
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+public slots:
+    void reset();
+signals:
+    void resetted();
 };
 #endif //SCENE_H

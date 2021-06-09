@@ -21,7 +21,7 @@ bool Game::setToken(int8_t x, int8_t y, int8_t v)
 Move Game::predictMove(int8_t v)
 {
     int32_t move;
-
+    board.prunedCount = 0;
     auto start = std::chrono::high_resolution_clock::now();
 
     if (v == BLACK_STONE)

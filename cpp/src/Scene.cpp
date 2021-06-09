@@ -154,8 +154,8 @@ void Scene::onTokenClicked(Token *token, QGraphicsSceneMouseEvent *event) {
             if (move.valid) {
                 lastPredictedMove = move;
                 game->setToken(move.x, move.y, move.v);
-                reset();
             }
+            reset();
         }
     }
 }

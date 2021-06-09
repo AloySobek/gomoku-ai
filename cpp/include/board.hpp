@@ -6,6 +6,7 @@
 # include <string>
 # include <bitset>
 # include <limits>
+# include <chrono>
 
 # define BOARD_SIZE 19
 
@@ -23,8 +24,8 @@ public:
 
     int8_t get_stone(int8_t x, int8_t y);
 
-    bool place_stone_on_board(int8_t x, int8_t y, bool is_black, int8_t *captures=nullptr);
-    bool remove_stone_from_board(int8_t x, int8_t y, bool is_black, int8_t *captures=nullptr); 
+    bool place_stone_on_board(int8_t x, int8_t y, bool is_black, uint8_t *captures=nullptr);
+    bool remove_stone_from_board(int8_t x, int8_t y, bool is_black=true, uint8_t *captures=nullptr);
 
     bool five_in_a_row(bool is_black);
     int32_t eval(bool is_black);

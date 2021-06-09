@@ -8,12 +8,27 @@ int8_t Game::getToken(int8_t x, int8_t y)
 
 bool Game::setToken(int8_t x, int8_t y, int8_t v)
 {
+    uint8_t stub;
+
+    if (x == 10 && y == 5)
+        board.print();
+
+    bool result;
+
     if (v == BLACK_STONE)
-        return (board.place_stone_on_board(x,y,true));
+        result = (board.place_stone_on_board(x,y,true,&stub));
     else if (v == WHITE_STONE)
-        return (board.place_stone_on_board(x,y,false));
+        result = (board.place_stone_on_board(x,y,false,&stub));
     else
-        return (board.remove_stone_from_board(x,y,true));
+        result = (board.remove_stone_from_board(x,y,true));
+
+    if (x == 10 && y == 5)
+    {
+        board.print();
+        exit(0);
+    }
+
+    return result;
 }
 
 Move Game::predictMove(int8_t v)

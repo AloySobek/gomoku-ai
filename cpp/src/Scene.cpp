@@ -130,6 +130,7 @@ void Scene::onTokenClicked(Token *token, QGraphicsSceneMouseEvent *event) {
         }
         game->setToken(token->x, token->y, token->def.color);
         token->update();
+        reset();
     } else {
         if (!game->getToken(token->x, token->y))
         {

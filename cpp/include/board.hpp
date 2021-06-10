@@ -38,9 +38,9 @@ public:
     void reset();
     void print();
 
-    int32_t move_map[BOARD_SIZE * BOARD_SIZE] = {0};
-    int32_t black_board[BOARD_SIZE] = {0};
-    int32_t white_board[BOARD_SIZE] = {0};
+    int32_t *move_map = new int32_t[BOARD_SIZE * BOARD_SIZE]{};
+    int32_t *black_board = new int32_t[BOARD_SIZE]{};
+    int32_t *white_board = new int32_t[BOARD_SIZE]{};
 private:
 };
 

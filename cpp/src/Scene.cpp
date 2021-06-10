@@ -152,10 +152,10 @@ void Scene::onTokenClicked(Token *token, QGraphicsSceneMouseEvent *event) {
     } else {
         if (!game->getToken(token->x, token->y))
         {
-            token->def.color = WHITE;
+            token->def.color = playAs;
             game->setToken(token->x, token->y, token->def.color);
             token->update();
-            auto move  = game->predictMove(BLACK);
+            auto move  = game->predictMove(playAs == BLACK ? WHITE : BLACK);
             if (move.valid) {
                 if (lastPredictedMove.valid)
                     getToken(lastPredictedMove.x, lastPredictedMove.y)->def.highlight = Qt::transparent;

@@ -206,7 +206,7 @@ int32_t Board::minimax(int8_t depth, int32_t *alpha, int32_t *beta, bool maximiz
                         place_stone_on_board(x, y, is_black, &captures);
                         max_h = std::max(max_h, minimax(depth-1, alpha, beta, false, !is_black));
                         remove_stone_from_board(x, y, is_black, &captures);
-                        if (max_h <= *beta) {
+                        if (max_h >= *beta) {
                             prunedCount++;
                             return max_h;
                         }
@@ -228,7 +228,7 @@ int32_t Board::minimax(int8_t depth, int32_t *alpha, int32_t *beta, bool maximiz
                         place_stone_on_board(x, y, is_black, &captures);
                         min_h = std::min(min_h, minimax(depth-1, alpha, beta, true, !is_black));
                         remove_stone_from_board(x, y, is_black, &captures);
-                        if (min_h >= *alpha)
+                        if (min_h <= *alpha)
                         {
                             prunedCount++;
                             return min_h;

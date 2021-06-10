@@ -151,8 +151,8 @@ void MainWindow::SetAiTitle() {
         )
         .arg(
                 QString::number(scene->lastPredictedMove.tookSecond, 'g', 4),
-                QString::number(scene->game->board.prunedCount),
-                QString::number(scene->game->board.leafVisited),
+                QString::number(scene->game->board.pruned_count),
+                QString::number(scene->game->board.nodes_count),
                 scene->devMode ? "<span style=\" color:#cc0000;\">True</span>" : "False"
         )
     );

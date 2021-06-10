@@ -33,14 +33,14 @@ public:
     int32_t eval(bool is_black);
 
     int32_t ai_move(bool is_black);
-    int32_t minimax(int8_t depth, int32_t *alpha, int32_t *beta, bool maximizer, bool is_black);
+    int32_t minimax(int8_t depth, int32_t alpha, int32_t beta, bool maximizer, bool is_black);
 
     void reset();
     void print();
 
-    int32_t *move_map = new int32_t[BOARD_SIZE * BOARD_SIZE]{};
-    int32_t *black_board = new int32_t[BOARD_SIZE]{};
-    int32_t *white_board = new int32_t[BOARD_SIZE]{};
+    int32_t *move_map {new int32_t[BOARD_SIZE * BOARD_SIZE]()};
+    int32_t *black_board{new int32_t[BOARD_SIZE]()};
+    int32_t *white_board{new int32_t[BOARD_SIZE]()};
 private:
 };
 

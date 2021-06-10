@@ -147,7 +147,7 @@ int32_t Board::eval(bool is_black)
 
     /* five_in_a_row(is_black); */
 
-    score += std::rand() % 200000000;
+    score += std::rand() % 200000;
 
     return (score);
 }
@@ -155,12 +155,7 @@ int32_t Board::eval(bool is_black)
 int32_t Board::ai_move(bool is_black)
 {
     int32_t max_h{std::numeric_limits<int32_t>::min()};
-
-    int32_t alpha{std::numeric_limits<int32_t>::min()};
-    int32_t beta{std::numeric_limits<int32_t>::max()};
-
     int32_t move{0};
-
     int32_t h{0};
 
     for (uint16_t y{0}; y < BOARD_SIZE; ++y)
@@ -171,7 +166,7 @@ int32_t Board::ai_move(bool is_black)
                     uint8_t captures{0};
 
                     place_stone_on_board(x, y, is_black, &captures);
-                    h = minimax(3, &alpha, &beta, true, is_black);
+                    h = minimax(3, std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::max(), true, is_black);
                     remove_stone_from_board(x, y, is_black, &captures);
                     
                     if (h >= max_h)
@@ -185,17 +180,16 @@ int32_t Board::ai_move(bool is_black)
     return (move);
 }
 
-int32_t Board::minimax(int8_t depth, int32_t *alpha, int32_t *beta, bool maximizer, bool is_black)
+int32_t Board::minimax(int8_t depth, int32_t alpha, int32_t beta, bool maximizer, bool is_black)
 {
     if (depth == 0)// or five_in_a_row(is_black))
     {
         leafVisited++;
-        return (eval(is_black) * (maximizer ? 1 : -1));
+        return (eval(is_black));
     }
     if (maximizer)
     {
         int32_t max_h = std::numeric_limits<int32_t>::min();
-
         for (uint16_t y{0}; y < BOARD_SIZE; ++y)
             for (uint16_t x{0}; x < BOARD_SIZE; ++x)
                 if (get_stone(x, y) == EMPTY_STONE)
@@ -206,18 +200,18 @@ int32_t Board::minimax(int8_t depth, int32_t *alpha, int32_t *beta, bool maximiz
                         place_stone_on_board(x, y, is_black, &captures);
                         max_h = std::max(max_h, minimax(depth-1, alpha, beta, false, !is_black));
                         remove_stone_from_board(x, y, is_black, &captures);
-                        if (max_h >= *beta) {
+                        alpha = std::max(alpha, max_h);
+                        if (beta <= alpha)
+                        {
                             prunedCount++;
                             return max_h;
                         }
-                        *alpha = std::max(*alpha, max_h);
                     }
         return max_h;
     }
     else
     {
         int32_t min_h = std::numeric_limits<int32_t>::max();
-
         for (uint16_t y{0}; y < BOARD_SIZE; ++y)
             for (uint16_t x{0}; x < BOARD_SIZE; ++x)
                 if (get_stone(x, y) == EMPTY_STONE)
@@ -228,12 +222,12 @@ int32_t Board::minimax(int8_t depth, int32_t *alpha, int32_t *beta, bool maximiz
                         place_stone_on_board(x, y, is_black, &captures);
                         min_h = std::min(min_h, minimax(depth-1, alpha, beta, true, !is_black));
                         remove_stone_from_board(x, y, is_black, &captures);
-                        if (min_h <= *alpha)
+                        beta = std::min(beta, min_h);
+                        if (beta <= alpha)
                         {
                             prunedCount++;
                             return min_h;
                         }
-                        *beta = std::max(*beta, min_h);
                     }
         return min_h;
     }

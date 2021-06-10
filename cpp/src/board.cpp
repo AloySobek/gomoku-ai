@@ -1,3 +1,4 @@
+#include <Patterns.hpp>
 #include "board.hpp"
 
 Board::Board()
@@ -117,8 +118,32 @@ bool Board::remove_stone_from_board(int8_t x, int8_t y, bool is_black, uint8_t *
 
 int32_t Board::minimax(int8_t depth, int32_t alpha, int32_t beta, bool maximizer, bool is_black)
 {
-    if (depth == 0 && ++nodes_count)
-        return (std::rand() % 200000000);
+    if (depth == 0 && ++nodes_count) {
+        char flat[BOARD_SIZE]{0};
+        int32_t sc = 0;
+        for (uint16_t y{0}; y < BOARD_SIZE; ++y)
+            for (uint16_t x{0}; x < BOARD_SIZE; ++x)
+                if (!(black_board[y] & (0x40000 >> x)) && !(white_board[y] & (0x40000 >> x)))
+                    if (move_map[y * BOARD_SIZE + x]) {
+                        for (const auto &dxy : ALL_DIRS) {
+                            Patterns::getFlat(
+                                    x, y,
+                                    dxy[0], dxy[1],
+                                    is_black ? BLACK_STONE : WHITE_STONE, 5,
+                                    black_board,
+                                    white_board,
+                                    flat
+                            );
+                            if (Patterns::isWin(is_black ? BLACK_STONE: WHITE_STONE, flat))
+                                return 100 * (maximizer ? 1 : -1);
+                            sc+=Patterns::isThreeFree(is_black ? BLACK_STONE: WHITE_STONE, flat) * 5;
+                            sc+=Patterns::isTowFree(is_black ? BLACK_STONE: WHITE_STONE, flat) * 1;
+                            sc+=Patterns::isCapture(is_black ? BLACK_STONE: WHITE_STONE, flat) * 5;
+                            sc+=Patterns::isFourFree(is_black ? BLACK_STONE: WHITE_STONE, flat) * 100;
+                        }
+                    }
+        return (sc) * (maximizer ? 1 : -1);
+    }
     if (maximizer)
     {
         int32_t max_h = std::numeric_limits<int32_t>::min();

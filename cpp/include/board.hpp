@@ -36,9 +36,9 @@ public:
     int32_t ai_move(bool is_black);
     void reset();
     void print();
+    std::unordered_map<uint64_t, int32_t> hash_map;
 private:
     uint64_t *zobrist_table{new uint64_t[BOARD_SIZE * BOARD_SIZE * 2]()};
-    std::unordered_map<uint64_t, int32_t> hash_map;
     uint64_t hash{0};
 
     void fill_zobrist_table();

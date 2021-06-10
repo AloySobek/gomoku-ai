@@ -82,6 +82,7 @@ void Scene::setToken(int x, int y, Scene::TokenDef td) {
     if (!tk)
         return;
     tk->setDef(td);
+    game->setToken(tk->x, tk->y, tk->def.color);
 }
 
 Scene::TokenColor Scene::tokenColorFromInt(int v) {

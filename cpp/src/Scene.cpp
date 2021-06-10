@@ -185,5 +185,9 @@ void Scene::reset() {
 }
 
 void Scene::startGame() {
-    // TODO If playAs==White and PvAI make ai move right away
+    if (playAs == WHITE && !pvpMode) {
+        game->setToken(BOARD_SIZE/2, BOARD_SIZE/2, BLACK);
+        getToken(BOARD_SIZE/2, BOARD_SIZE/2)->def.color = BLACK;
+        getToken(BOARD_SIZE/2, BOARD_SIZE/2)->update();
+    }
 }

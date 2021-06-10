@@ -56,6 +56,7 @@ void MainWindow::onActionRestart() {
         return;
     game->reset();
     scene->reset();
+    scene->startGame();
 }
 
 void MainWindow::onActionLoad() {

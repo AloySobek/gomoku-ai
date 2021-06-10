@@ -3,9 +3,9 @@
 
 int8_t Game::getToken(int8_t x, int8_t y)
 {
-    if (board.black_board[y] & 262144 >> x)
+    if (board.black_board[y] & 0x40000 >> x)
         return (BLACK_STONE);
-    else if (board.white_board[y] & 262144 >> x)
+    else if (board.white_board[y] & 0x40000 >> x)
         return (WHITE_STONE);
     else
         return (EMPTY_STONE);

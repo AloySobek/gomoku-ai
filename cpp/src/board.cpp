@@ -1,5 +1,7 @@
 #include "board.hpp"
 #include "Patterns.hpp"
+#include <cstdlib>
+#include <ostream>
 
 Board::Board()
 {
@@ -116,55 +118,51 @@ bool Board::remove_stone_from_board(int8_t x, int8_t y, bool is_black, uint8_t *
     return (false);
 }
 
-int32_t Board::minimax(int8_t depth, int32_t alpha, int32_t beta, bool maximizer, bool is_black)
+int32_t Board::minimax(int8_t depth, int32_t alpha, int32_t beta, int8_t x, int8_t y, bool maximizer, bool is_black)
 {
-    if (depth == 0 && ++nodes_count)
+    ++nodes_count;
+    if (depth == 0)
     {
-        return (std::rand() % 200000000);
-        /* char flat[BOARD_SIZE]{0}; */
-        /* int32_t sc = 0; */
-        /* for (uint16_t y{0}; y < BOARD_SIZE; ++y) */
-        /*     for (uint16_t x{0}; x < BOARD_SIZE; ++x) */
-        /*         if (!(black_board[y] & (0x40000 >> x)) && !(white_board[y] & (0x40000 >> x))) */
-        /*             if (move_map[y * BOARD_SIZE + x]) { */
-        /*                 for (const auto &dxy : ALL_DIRS) { */
-        /*                     Patterns::getFlat( */
-        /*                             x, y, */
-        /*                             dxy[0], dxy[1], */
-        /*                             is_black ? BLACK_STONE : WHITE_STONE, 5, */
-        /*                             black_board, */
-        /*                             white_board, */
-        /*                             flat */
-        /*                     ); */
-        /*                     if (Patterns::isWin(is_black ? BLACK_STONE: WHITE_STONE, flat)) */
-        /*                         return 100 * (maximizer ? 1 : -1); */
-        /*                     sc+=Patterns::isThreeFree(is_black ? BLACK_STONE: WHITE_STONE, flat) * 5; */
-        /*                     sc+=Patterns::isTowFree(is_black ? BLACK_STONE: WHITE_STONE, flat) * 1; */
-        /*                     sc+=Patterns::isCapture(is_black ? BLACK_STONE: WHITE_STONE, flat) * 5; */
-        /*                     sc+=Patterns::isFourFree(is_black ? BLACK_STONE: WHITE_STONE, flat) * 100; */
-        /*                 } */
-        /*             } */
-        /* return (sc) * (maximizer ? 1 : -1); */
+        int32_t score{0};
+
+        for (uint16_t y{0}; y < BOARD_SIZE; ++y)
+            for (uint16_t x{0}; x < BOARD_SIZE; ++x)
+                if (move_map[y * BOARD_SIZE + x])
+                {
+                    if (five_in_a_row(x, y, is_black))
+                        score += 100000;
+                    if (open_four(x, y, is_black))
+                        score += 15000;
+                    if (simple_four(x, y, is_black))
+                        score += 10000;
+                    if (open_three(x, y, is_black))
+                        score += 10000;
+                    if (broken_three(x, y, is_black))
+                        score += 1000;
+                    if (not_threat(x, y, is_black))
+                        score += 100;
+                }
+        return (score);// * (maximizer ? 1 : -1));
     }
     if (maximizer)
     {
         int32_t max_h = std::numeric_limits<int32_t>::min();
         for (uint16_t y{0}; y < BOARD_SIZE; ++y)
             for (uint16_t x{0}; x < BOARD_SIZE; ++x)
-                if (!(black_board[y] & (0x40000 >> x)) && !(white_board[y] & (0x40000 >> x)))
-                    if (move_map[y * BOARD_SIZE + x])
+                if (move_map[y * BOARD_SIZE + x])
+                    if (!(black_board[y] & (0x40000 >> x)) && !(white_board[y] & (0x40000 >> x)))
                     {
                         int32_t h{0};
                         uint8_t captures{0};
                         place_stone_on_board(x, y, is_black, &captures);
-                        if (hash_map.find(hash) != hash_map.end() && ++cache_hit_count)
-                            h = hash_map[hash];
-                        else
-                        {
-                            h = minimax(depth-1, alpha, beta, false, !is_black);
-                            hash_map[hash] = h;
-                        }
-                        /* h = minimax(depth-1, alpha, beta, false, !is_black); */
+                        /* if (hash_map.find(hash) != hash_map.end() && ++cache_hit_count) */
+                        /*     h = hash_map[hash]; */
+                        /* else */
+                        /* { */
+                        /*     h = minimax(depth-1, alpha, beta, x, y, false, !is_black); */
+                        /*     hash_map[hash] = h; */
+                        /* } */
+                        h = minimax(depth-1, alpha, beta,x,y, false, !is_black);
                         max_h = std::max(max_h, h);
                         remove_stone_from_board(x, y, is_black, &captures);
                         alpha = std::max(alpha, max_h);
@@ -178,20 +176,20 @@ int32_t Board::minimax(int8_t depth, int32_t alpha, int32_t beta, bool maximizer
         int32_t min_h = std::numeric_limits<int32_t>::max();
         for (uint16_t y{0}; y < BOARD_SIZE; ++y)
             for (uint16_t x{0}; x < BOARD_SIZE; ++x)
-                if (!(black_board[y] & (0x40000 >> x)) && !(white_board[y] & (0x40000 >> x)))
-                    if (move_map[y * BOARD_SIZE + x])
+                if (move_map[y * BOARD_SIZE + x])
+                    if (!(black_board[y] & (0x40000 >> x)) && !(white_board[y] & (0x40000 >> x)))
                     {
                         int32_t h{0};
                         uint8_t captures{0};
                         place_stone_on_board(x, y, is_black, &captures);
-                        if (hash_map.find(hash) != hash_map.end() && ++cache_hit_count)
-                            h = hash_map[hash];
-                        else
-                        {
-                            h = minimax(depth-1, alpha, beta, true, !is_black);
-                            hash_map[hash] = h;
-                        }
-                        /* h = minimax(depth-1, alpha, beta, true, !is_black); */
+                        /* if (hash_map.find(hash) != hash_map.end() && ++cache_hit_count) */
+                        /*     h = hash_map[hash]; */
+                        /* else */
+                        /* { */
+                        /*     h = minimax(depth-1, alpha, beta, x, y, true, !is_black); */
+                        /*     hash_map[hash] = h; */
+                        /* } */
+                        h = minimax(depth-1, alpha, beta, true,x,y, !is_black);
                         min_h = std::min(min_h, h);
                         remove_stone_from_board(x, y, is_black, &captures);
                         beta = std::min(beta, min_h);
@@ -222,13 +220,16 @@ int32_t Board::ai_move(bool is_black)
                 {
                     uint8_t captures{0};
                     place_stone_on_board(x, y, is_black, &captures);
-                    if (hash_map.find(hash) != hash_map.end() && ++cache_hit_count)
-                        h = hash_map[hash];
-                    else
-                    {
-                        h = minimax(3, std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::max(), true, is_black);
-                        hash_map[hash] = h;
-                    }
+                    /* if (hash_map.find(hash) != hash_map.end() && ++cache_hit_count) */
+                    /*     h = hash_map[hash]; */
+                    /* else */
+                    /* { */
+                    /*     h = minimax(3, std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::max(), x, y, true, is_black); */
+                    /*     hash_map[hash] = h; */
+                    /* } */
+                    h = minimax(3, std::numeric_limits<int32_t>::min(), std::numeric_limits<int32_t>::max(),x,y, true, is_black);
+                    if (h >= 150000)
+                        exit(0);
                     remove_stone_from_board(x, y, is_black, &captures);
                     if (h >= max_h)
                     {
@@ -294,4 +295,248 @@ uint64_t Board::get_hash()
                 hash ^= zobrist_table[(2 + y) * BOARD_SIZE + x];
         }
     return (hash);
+}
+
+bool Board::five_in_a_row(int8_t x, int8_t y, bool is_black)
+{
+    if (is_black && black_board[y] & (0x40000 >> x))
+    {
+        if (y+4 < BOARD_SIZE && (black_board[y] & black_board[y+1] & black_board[y+2] & black_board[y+3] & black_board[y+4] & (0x40000 >> x)))
+            return (true);
+        if (x+4 < BOARD_SIZE && (black_board[y] & (black_board[y] << 1) & (black_board[y] << 2) & (black_board[y] << 3) & (black_board[y] << 4) & (0x40000 >> x)))
+            return (true);
+        if (x+4 < BOARD_SIZE && y+4 < BOARD_SIZE && (black_board[y] & (black_board[y+1] << 1) & (black_board[y+2] << 2) & (black_board[y+3] << 3) & (black_board[y+4] << 4) & (0x40000 >> x)))
+            return (true);
+        if (x-4 < BOARD_SIZE && y+4 < BOARD_SIZE && (black_board[y] & (black_board[y+1] >> 1) & (black_board[y+2] >> 2) & (black_board[y+3] >> 3) & (black_board[y+4] >> 4) & (0x40000 >> x)))
+            return (true);
+    }
+    else if (!is_black && white_board[y] & (0x40000 >> x))
+    {
+        if (y+4 < BOARD_SIZE && (black_board[y] & black_board[y+1] & black_board[y+2] & black_board[y+3] & black_board[y+4] & (0x40000 >> x)))
+            return (true);
+        if (x+4 < BOARD_SIZE && (black_board[y] & (black_board[y] << 1) & (black_board[y] << 2) & (black_board[y] << 3) & (black_board[y] << 4) & (0x40000 >> x)))
+            return (true);
+        if (x+4 < BOARD_SIZE && y+4 < BOARD_SIZE && (black_board[y] & (black_board[y+1] << 1) & (black_board[y+2] << 2) & (black_board[y+3] << 3) & (black_board[y+4] << 4) & (0x40000 >> x)))
+            return (true);
+        if (x-4 < BOARD_SIZE && y+4 < BOARD_SIZE && (black_board[y] & (black_board[y+1] >> 1) & (black_board[y+2] >> 2) & (black_board[y+3] >> 3) & (black_board[y+4] >> 4) & (0x40000 >> x)))
+            return (true);
+    }
+    return (false);
+}
+
+bool Board::open_four(int8_t x, int8_t y, bool is_black)
+{
+    if (is_black && (!(black_board[y] & (0x40000 >> x)) && !(white_board[y] & (0x40000 >> x))))
+    {
+        if (y+5 < BOARD_SIZE && !(black_board[y+5] & (0x40000 >> x)) && !(white_board[y+5] & (0x40000 >> x))
+                && (black_board[y+1] & black_board[y+2] & black_board[y+3] & black_board[y+4] & (0x40000 >> x)))
+            return (true);
+        if (x+5 < BOARD_SIZE && !(black_board[y] & (0x40000 >> (x+5))) && !(white_board[y] & (0x40000 >> (x+5)))
+                && ((black_board[y] << 1) & (black_board[y] << 2) & (black_board[y] << 3) & (black_board[y] << 4) & (0x40000 >> x)))
+            return (true);
+        if (x+5 < BOARD_SIZE && y+5 < BOARD_SIZE && !(black_board[y+5] & (0x40000 >> (x+5))) && !(white_board[y+5] & (0x40000 >> (x+5)))
+                && ((black_board[y+1] << 1) & (black_board[y+2] << 2) & (black_board[y+3] << 3) & (black_board[y+4] << 4) & (0x40000 >> x)))
+            return (true);
+        if (x-5 < BOARD_SIZE && y+5 < BOARD_SIZE && !(black_board[y+5] & (0x40000 >> (x-5))) && !(white_board[y+5] & (0x40000 >> (x-5)))
+                && ((black_board[y+1] >> 1) & (black_board[y+2] >> 2) & (black_board[y+3] >> 3) & (black_board[y+4] >> 4) & (0x40000 >> x)))
+            return (true);
+    }
+    else if (is_black && (black_board[y] & (0x40000 >> x)))
+    {
+        if (y+7 < BOARD_SIZE && !(black_board[y+2] & (0x40000 >> x)) && !(white_board[y+2] & (0x40000 >> x))
+                && !(black_board[y+5] & (0x40000 >> x)) && !(white_board[y+5] & (0x40000 >> x))
+                && (black_board[y+1] & black_board[y+3] & black_board[y+4] & black_board[y+6] & black_board[y+7] & (0x40000 >> x)))
+            return (true);
+        if (x+7 < BOARD_SIZE && !(black_board[y] & (0x40000 >> (x+2))) && !(white_board[y] & (0x40000 >> (x+2)))
+                && !(black_board[y] & (0x40000 >> (x+5))) && !(white_board[y] & (0x40000 >> (x+5)))
+                && ((black_board[y] << 1) & (black_board[y] << 3) & (black_board[y] << 4) & (black_board[y] << 6) & (black_board[y] << 7) & (0x40000 >> x)))
+            return (true);
+        if (x+7 < BOARD_SIZE && y+7 < BOARD_SIZE && !(black_board[y+2] & (0x40000 >> (x+2))) && !(white_board[y+2] & (0x40000 >> (x+2)))
+                && !(black_board[y+5] & (0x40000 >> (x+5))) && !(white_board[y+5] & (0x40000 >> (x+5)))
+                && ((black_board[y+1] << 1) & (black_board[y+3] << 3) & (black_board[y+4] << 4) & (black_board[y+6] << 6) & (black_board[y+7] << 7) & (0x40000 >> x)))
+            return (true);
+        if (x-7 < BOARD_SIZE && y+7 < BOARD_SIZE && !(black_board[y+2] & (0x40000 >> (x-2))) && !(white_board[y+2] & (0x40000 >> (x-2)))
+                && !(black_board[y+5] & (0x40000 >> (x-5))) && !(white_board[y+5] & (0x40000 >> (x-5)))
+                && ((black_board[y+1] >> 1) & (black_board[y+3] >> 3) & (black_board[y+4] >> 4) & (black_board[y+6] >> 6) & (black_board[y+7] >> 7) & (0x40000 >> x)))
+            return (true);
+
+        if (y+8 < BOARD_SIZE && !(black_board[y+3] & (0x40000 >> x)) && !(white_board[y+3] & (0x40000 >> x))
+                && !(black_board[y+5] & (0x40000 >> x)) && !(white_board[y+5] & (0x40000 >> x))
+                && (black_board[y+1] & black_board[y+2] & black_board[y+4] & black_board[y+6] & black_board[y+7] & black_board[y+8] & (0x40000 >> x)))
+            return (true);
+        if (x+8 < BOARD_SIZE && !(black_board[y] & (0x40000 >> (x+3))) && !(white_board[y] & (0x40000 >> (x+3)))
+                && !(black_board[y] & (0x40000 >> (x+5))) && !(white_board[y] & (0x40000 >> (x+5)))
+                && ((black_board[y] << 1) & (black_board[y] << 2) & (black_board[y] << 4) & (black_board[y] << 6) & (black_board[y] << 7) & (black_board[y] << 8) & (0x40000 >> x)))
+            return (true);
+        if (x+8 < BOARD_SIZE && y+8 < BOARD_SIZE && !(black_board[y+3] & (0x40000 >> (x+3))) && !(white_board[y+3] & (0x40000 >> (x+3)))
+                && !(black_board[y+5] & (0x40000 >> (x+5))) && !(white_board[y+5] & (0x40000 >> (x+5)))
+                && ((black_board[y+1] << 1) & (black_board[y+2] << 2) & (black_board[y+4] << 4) & (black_board[y+6] << 6) & (black_board[y+7] << 7) & (black_board[y+8] << 8) & (0x40000 >> x)))
+            return (true);
+        if (x-8 < BOARD_SIZE && y+8 < BOARD_SIZE && !(black_board[y+3] & (0x40000 >> (x-3))) && !(white_board[y+3] & (0x40000 >> (x-3)))
+                && !(black_board[y+5] & (0x40000 >> (x-5))) && !(white_board[y+5] & (0x40000 >> (x-5)))
+                && ((black_board[y+1] >> 1) & (black_board[y+2] >> 2) & (black_board[y+4] >> 4) & (black_board[y+6] >> 6) & (black_board[y+7] >> 7) & (black_board[y+8] >> 8) & (0x40000 >> x)))
+            return (true);
+    }
+    else if (!is_black && (!(black_board[y] & (0x40000 >> x)) && !(white_board[y] & (0x40000 >> x))))
+    {
+        if (y+5 < BOARD_SIZE && !(white_board[y+5] & (0x40000 >> x)) && !(black_board[y+5] & (0x40000 >> x))
+                && (white_board[y+1] & white_board[y+2] & white_board[y+3] & white_board[y+4] & (0x40000 >> x)))
+            return (true);
+        if (x+5 < BOARD_SIZE && !(white_board[y] & (0x40000 >> (x+5))) && !(black_board[y] & (0x40000 >> (x+5)))
+                && ((white_board[y] << 1) & (white_board[y] << 2) & (white_board[y] << 3) & (white_board[y] << 4) & (0x40000 >> x)))
+            return (true);
+        if (x+5 < BOARD_SIZE && y+5 < BOARD_SIZE && !(white_board[y+5] & (0x40000 >> (x+5))) && !(black_board[y+5] & (0x40000 >> (x+5)))
+                && ((white_board[y+1] << 1) & (white_board[y+2] << 2) & (white_board[y+3] << 3) & (white_board[y+4] << 4) & (0x40000 >> x)))
+            return (true);
+        if (x-5 < BOARD_SIZE && y+5 < BOARD_SIZE && !(white_board[y+5] & (0x40000 >> (x-5))) && !(black_board[y+5] & (0x40000 >> (x-5)))
+                && ((white_board[y+1] >> 1) & (white_board[y+2] >> 2) & (white_board[y+3] >> 3) & (white_board[y+4] >> 4) & (0x40000 >> x)))
+            return (true);
+    }
+    else if (!is_black && (white_board[y] & (0x40000 >> x)))
+    {
+        if (y+7 < BOARD_SIZE && !(white_board[y+2] & (0x40000 >> x)) && !(black_board[y+2] & (0x40000 >> x))
+                && !(white_board[y+5] & (0x40000 >> x)) && !(black_board[y+5] & (0x40000 >> x))
+                && (white_board[y+1] & white_board[y+3] & white_board[y+4] & white_board[y+6] & white_board[y+7] & (0x40000 >> x)))
+            return (true);
+        if (x+7 < BOARD_SIZE && !(white_board[y] & (0x40000 >> (x+2))) && !(black_board[y] & (0x40000 >> (x+2)))
+                && !(white_board[y] & (0x40000 >> (x+5))) && !(black_board[y] & (0x40000 >> (x+5)))
+                && ((white_board[y] << 1) & (white_board[y] << 3) & (white_board[y] << 4) & (white_board[y] << 6) & (white_board[y] << 7) & (0x40000 >> x)))
+            return (true);
+        if (x+7 < BOARD_SIZE && y+7 < BOARD_SIZE && !(white_board[y+2] & (0x40000 >> (x+2))) && !(black_board[y+2] & (0x40000 >> (x+2)))
+                && !(white_board[y+5] & (0x40000 >> (x+5))) && !(black_board[y+5] & (0x40000 >> (x+5)))
+                && ((white_board[y+1] << 1) & (white_board[y+3] << 3) & (white_board[y+4] << 4) & (white_board[y+6] << 6) & (white_board[y+7] << 7) & (0x40000 >> x)))
+            return (true);
+        if (x-7 < BOARD_SIZE && y+7 < BOARD_SIZE && !(white_board[y+2] & (0x40000 >> (x-2))) && !(black_board[y+2] & (0x40000 >> (x-2)))
+                && !(white_board[y+5] & (0x40000 >> (x-5))) && !(black_board[y+5] & (0x40000 >> (x-5)))
+                && ((white_board[y+1] >> 1) & (white_board[y+3] >> 3) & (white_board[y+4] >> 4) & (white_board[y+6] >> 6) & (white_board[y+7] >> 7) & (0x40000 >> x)))
+            return (true);
+
+        if (y+8 < BOARD_SIZE && !(white_board[y+3] & (0x40000 >> x)) && !(black_board[y+3] & (0x40000 >> x))
+                && !(white_board[y+5] & (0x40000 >> x)) && !(black_board[y+5] & (0x40000 >> x))
+                && (white_board[y+1] & white_board[y+2] & white_board[y+4] & white_board[y+6] & white_board[y+7] & white_board[y+8] & (0x40000 >> x)))
+            return (true);
+        if (x+8 < BOARD_SIZE && !(white_board[y] & (0x40000 >> (x+3))) && !(black_board[y] & (0x40000 >> (x+3)))
+                && !(white_board[y] & (0x40000 >> (x+5))) && !(black_board[y] & (0x40000 >> (x+5)))
+                && ((white_board[y] << 1) & (white_board[y] << 2) & (white_board[y] << 4) & (white_board[y] << 6) & (white_board[y] << 7) & (white_board[y] << 8) & (0x40000 >> x)))
+            return (true);
+        if (x+8 < BOARD_SIZE && y+8 < BOARD_SIZE && !(white_board[y+3] & (0x40000 >> (x+3))) && !(black_board[y+3] & (0x40000 >> (x+3)))
+                && !(white_board[y+5] & (0x40000 >> (x+5))) && !(black_board[y+5] & (0x40000 >> (x+5)))
+                && ((white_board[y+1] << 1) & (white_board[y+2] << 2) & (white_board[y+4] << 4) & (white_board[y+6] << 6) & (white_board[y+7] << 7) & (white_board[y+8] << 8) & (0x40000 >> x)))
+            return (true);
+        if (x-8 < BOARD_SIZE && y+8 < BOARD_SIZE && !(white_board[y+3] & (0x40000 >> (x-3))) && !(black_board[y+3] & (0x40000 >> (x-3)))
+                && !(white_board[y+5] & (0x40000 >> (x-5))) && !(black_board[y+5] & (0x40000 >> (x-5)))
+                && ((white_board[y+1] >> 1) & (white_board[y+2] >> 2) & (white_board[y+4] >> 4) & (white_board[y+6] >> 6) & (white_board[y+7] >> 7) & (white_board[y+8] >> 8) & (0x40000 >> x)))
+            return (true);
+    }
+    return (false);
+}
+
+bool Board::simple_four(int8_t x, int8_t y, bool is_black)
+{
+    if (is_black && (white_board[y] & (0x40000 >> x)))
+    {
+        if (y+5 < BOARD_SIZE && !(black_board[y+5] & (0x40000 >> x)) && !(white_board[y+5] & (0x40000 >> x))
+                && (black_board[y+1] & black_board[y+2] & black_board[y+3] & black_board[y+4] & (0x40000 >> x)))
+            return (true);
+        if (x+5 < BOARD_SIZE && !(black_board[y] & (0x40000 >> (x+5))) && !(white_board[y] & (0x40000 >> (x+5)))
+                && ((black_board[y] << 1) & (black_board[y] << 2) & (black_board[y] << 3) & (black_board[y] << 4) & (0x40000 >> x)))
+            return (true);
+        if (x+5 < BOARD_SIZE && y+5 < BOARD_SIZE && !(black_board[y+5] & (0x40000 >> (x+5))) && !(white_board[y+5] & (0x40000 >> (x+5)))
+                && ((black_board[y+1] << 1) & (black_board[y+2] << 2) & (black_board[y+3] << 3) & (black_board[y+4] << 4) & (0x40000 >> x)))
+            return (true);
+        if (x-5 < BOARD_SIZE && y+5 < BOARD_SIZE && !(black_board[y+5] & (0x40000 >> (x-5))) && !(white_board[y+5] & (0x40000 >> (x-5)))
+                && ((black_board[y+1] >> 1) & (black_board[y+2] >> 2) & (black_board[y+3] >> 3) & (black_board[y+4] >> 4) & (0x40000 >> x)))
+            return (true);
+    }
+    else if (is_black && (!(black_board[y] & (0x40000 >> x)) && !(white_board[y] & (0x40000 >> x))))
+    {
+        if (y+6 < BOARD_SIZE && !(black_board[y+6] & (0x40000 >> x)) && !(white_board[y+6] & (0x40000 >> x))
+                && (black_board[y+1] & black_board[y+2] & black_board[y+4] & black_board[y+5] & (0x40000 >> x)))
+            return (true);
+        if (x+6 < BOARD_SIZE && !(black_board[y] & (0x40000 >> (x+6))) && !(white_board[y] & (0x40000 >> (x+6)))
+                && ((black_board[y] << 1) & (black_board[y] << 2) & (black_board[y] << 4) & (black_board[y] << 5) & (0x40000 >> x)))
+            return (true);
+        if (x+6 < BOARD_SIZE && y+6 < BOARD_SIZE && !(black_board[y+6] & (0x40000 >> (x+6))) && !(white_board[y+6] & (0x40000 >> (x+6)))
+                && ((black_board[y+1] << 1) & (black_board[y+2] << 2) & (black_board[y+4] << 4) & (black_board[y+5] << 5) & (0x40000 >> x)))
+            return (true);
+        if (x-6 < BOARD_SIZE && y+6 < BOARD_SIZE && !(black_board[y+6] & (0x40000 >> (x-6))) && !(white_board[y+6] & (0x40000 >> (x-6)))
+                && ((black_board[y+1] >> 1) & (black_board[y+2] >> 2) & (black_board[y+4] >> 4) & (black_board[y+5] >> 5) & (0x40000 >> x)))
+            return (true);
+    }
+    else if (!is_black && (black_board[y] & (0x40000 >> x)))
+    {
+        if (y+5 < BOARD_SIZE && !(white_board[y+5] & (0x40000 >> x)) && !(black_board[y+5] & (0x40000 >> x))
+                && (white_board[y+1] & white_board[y+2] & white_board[y+3] & white_board[y+4] & (0x40000 >> x)))
+            return (true);
+        if (x+5 < BOARD_SIZE && !(white_board[y] & (0x40000 >> (x+5))) && !(black_board[y] & (0x40000 >> (x+5)))
+                && ((white_board[y] << 1) & (white_board[y] << 2) & (white_board[y] << 3) & (white_board[y] << 4) & (0x40000 >> x)))
+            return (true);
+        if (x+5 < BOARD_SIZE && y+5 < BOARD_SIZE && !(white_board[y+5] & (0x40000 >> (x+5))) && !(black_board[y+5] & (0x40000 >> (x+5)))
+                && ((white_board[y+1] << 1) & (white_board[y+2] << 2) & (white_board[y+3] << 3) & (white_board[y+4] << 4) & (0x40000 >> x)))
+            return (true);
+        if (x-5 < BOARD_SIZE && y+5 < BOARD_SIZE && !(white_board[y+5] & (0x40000 >> (x-5))) && !(black_board[y+5] & (0x40000 >> (x-5)))
+                && ((white_board[y+1] >> 1) & (white_board[y+2] >> 2) & (white_board[y+3] >> 3) & (white_board[y+4] >> 4) & (0x40000 >> x)))
+            return (true);
+    }
+    return (false);
+}
+
+bool Board::open_three(int8_t x, int8_t y, bool is_black)
+{
+    if (is_black && (!(black_board[y] & (0x40000 >> x)) && !(white_board[y] & (0x40000 >> x))))
+    {
+        if (y+5 < BOARD_SIZE && !(black_board[y+5] & (0x40000 >> x)) && !(white_board[y+5] & (0x40000 >> x))
+                && (black_board[y+1] & black_board[y+2] & black_board[y+3] & black_board[y+4] & (0x40000 >> x)))
+            return (true);
+        if (x+5 < BOARD_SIZE && !(black_board[y] & (0x40000 >> (x+5))) && !(white_board[y] & (0x40000 >> (x+5)))
+                && ((black_board[y] << 1) & (black_board[y] << 2) & (black_board[y] << 3) & (black_board[y] << 4) & (0x40000 >> x)))
+            return (true);
+        if (x+5 < BOARD_SIZE && y+5 < BOARD_SIZE && !(black_board[y+5] & (0x40000 >> (x+5))) && !(white_board[y+5] & (0x40000 >> (x+5)))
+                && ((black_board[y+1] << 1) & (black_board[y+2] << 2) & (black_board[y+3] << 3) & (black_board[y+4] << 4) & (0x40000 >> x)))
+            return (true);
+        if (x-5 < BOARD_SIZE && y+5 < BOARD_SIZE && !(black_board[y+5] & (0x40000 >> (x-5))) && !(white_board[y+5] & (0x40000 >> (x-5)))
+                && ((black_board[y+1] >> 1) & (black_board[y+2] >> 2) & (black_board[y+3] >> 3) & (black_board[y+4] >> 4) & (0x40000 >> x)))
+            return (true);
+    }
+    return (false);
+}
+
+bool Board::broken_three(int8_t x, int8_t y, bool is_black)
+{
+    return (false);
+}
+
+bool Board::not_threat(int8_t x, int8_t y, bool is_black)
+{
+    if (is_black && (white_board[y] & (0x40000 >> x)))
+    {
+        if (y+4 < BOARD_SIZE && !(black_board[y+4] & (0x40000 >> x)) && !(white_board[y+4] & (0x40000 >> x))
+                && (black_board[y+1] & black_board[y+2] & black_board[y+3] & (0x40000 >> x)))
+            return (true);
+        if (x+4 < BOARD_SIZE && !(black_board[y] & (0x40000 >> (x+4))) && !(white_board[y] & (0x40000 >> (x+4)))
+                && ((black_board[y] << 1) & (black_board[y] << 2) & (black_board[y] << 3) & (0x40000 >> x)))
+            return (true);
+        if (x+4 < BOARD_SIZE && y+4 < BOARD_SIZE && !(black_board[y+4] & (0x40000 >> (x+4))) && !(white_board[y+4] & (0x40000 >> (x+4)))
+                && ((black_board[y+1] << 1) & (black_board[y+2] << 2) & (black_board[y+3] << 3) & (0x40000 >> x)))
+            return (true);
+        if (x-4 < BOARD_SIZE && y+4 < BOARD_SIZE && !(black_board[y+4] & (0x40000 >> (x-4))) && !(white_board[y+4] & (0x40000 >> (x-4)))
+                && ((black_board[y+1] >> 1) & (black_board[y+2] >> 2) & (black_board[y+3] >> 3) & (0x40000 >> x)))
+            return (true);
+    }
+    if (!is_black && (black_board[y] & (0x40000 >> x)))
+    {
+        if (y+4 < BOARD_SIZE && !(white_board[y+4] & (0x40000 >> x)) && !(black_board[y+4] & (0x40000 >> x))
+                && (white_board[y+1] & white_board[y+2] & white_board[y+3] & (0x40000 >> x)))
+            return (true);
+        if (x+4 < BOARD_SIZE && !(white_board[y] & (0x40000 >> (x+4))) && !(black_board[y] & (0x40000 >> (x+4)))
+                && ((white_board[y] << 1) & (white_board[y] << 2) & (white_board[y] << 3) & (0x40000 >> x)))
+            return (true);
+        if (x+4 < BOARD_SIZE && y+4 < BOARD_SIZE && !(white_board[y+4] & (0x40000 >> (x+4))) && !(black_board[y+4] & (0x40000 >> (x+4)))
+                && ((white_board[y+1] << 1) & (white_board[y+2] << 2) & (white_board[y+3] << 3) & (0x40000 >> x)))
+            return (true);
+        if (x-4 < BOARD_SIZE && y+4 < BOARD_SIZE && !(white_board[y+4] & (0x40000 >> (x-4))) && !(black_board[y+4] & (0x40000 >> (x-4)))
+                && ((white_board[y+1] >> 1) & (white_board[y+2] >> 2) & (white_board[y+3] >> 3) & (0x40000 >> x)))
+            return (true);
+    }
+    return (false);
 }

@@ -32,10 +32,18 @@ public:
     Board();
     bool place_stone_on_board(int8_t x, int8_t y, bool is_black, uint8_t *captures=nullptr);
     bool remove_stone_from_board(int8_t x, int8_t y, bool is_black, uint8_t *captures=nullptr);
-    int32_t minimax(int8_t depth, int32_t alpha, int32_t beta, bool maximizer, bool is_black);
+    int32_t minimax(int8_t depth, int32_t alpha, int32_t beta, int8_t x, int8_t y, bool maximizer, bool is_black);
     int32_t ai_move(bool is_black);
     void reset();
     void print();
+
+    bool five_in_a_row(int8_t x, int8_t y, bool is_black);
+    bool open_four(int8_t x, int8_t y, bool is_black);
+    bool simple_four(int8_t x, int8_t y, bool is_black);
+    bool open_three(int8_t x, int8_t y, bool is_black);
+    bool broken_three(int8_t x, int8_t y, bool is_black);
+    bool not_threat(int8_t x, int8_t y, bool is_black);
+
     std::unordered_map<uint64_t, int32_t> hash_map;
 private:
     uint64_t *zobrist_table{new uint64_t[BOARD_SIZE * BOARD_SIZE * 2]()};

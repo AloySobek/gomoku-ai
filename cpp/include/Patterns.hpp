@@ -7,12 +7,14 @@
 #include "board.hpp"
 #include "cstring"
 
-constexpr char P1_FOUR_FREE_PTR[1][7] = {
-        "011110",
-};
-constexpr char P2_FOUR_FREE_PTR[1][7] = {
-        "022220",
-};
+//constexpr char P1_FOUR_FREE_PTR[1][7] = {
+//        "011110",
+//};
+//constexpr char P2_FOUR_FREE_PTR[1][7] = {
+//        "022220",
+//};
+constexpr char P1_FOUR_FREE_PTR[7] = "011110";
+constexpr char P2_FOUR_FREE_PTR[7] = "022220";
 constexpr char P1_THREE_FREE_PTR[3][7] = {
         "01110",
         "011010",
@@ -72,11 +74,7 @@ public:
         return strstr(flat, v == BLACK_STONE ? P1_TOW_FREE_PTR : P2_TOW_FREE_PTR) != nullptr;
     }
     static bool isFourFree(const uint8_t v, const char flat[BOARD_SIZE]) {
-        for (const auto &ptr : v == BLACK_STONE ? P1_FOUR_FREE_PTR : P2_FOUR_FREE_PTR) {
-            if (strstr(flat, ptr))
-                return true;
-        }
-        return false;
+        return strstr(flat, v == BLACK_STONE ? P1_FOUR_FREE_PTR : P2_FOUR_FREE_PTR) != nullptr;
     }
     static bool isWin(const uint8_t v, const char flat[BOARD_SIZE]) {
         return strstr(flat, v == BLACK_STONE ? P1_WIN_PTR : P2_WIN_PTR) != nullptr;

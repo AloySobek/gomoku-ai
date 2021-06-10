@@ -21,10 +21,17 @@ MainWindow::MainWindow(Game *game, QWidget *parent)
     connect(ui->actionDevMode, SIGNAL(toggled(bool)), this, SLOT(onActionDevMode()));
     connect(ui->actionDevMode, SIGNAL(toggled(bool)), this, SLOT(reset()));
     connect(ui->actionShowMask, SIGNAL(toggled(bool)), this, SLOT(onActionShowMask()));
-//    connect(ui->actionPvPMode, SIGNAL(toggled(bool)), this, SLOT(onActionPvPMode()));
+
     connect(ui->actionShowFreeTow, SIGNAL(triggered(bool)), this, SLOT(onActionShowFreeTow()));
     connect(ui->actionShowFreeThree, SIGNAL(triggered(bool)), this, SLOT(onActionShowFreeThree()));
     connect(ui->actionShowFreeFour, SIGNAL(triggered(bool)), this, SLOT(onActionShowFreeFour()));
+
+    connect(ui->actionShowWin, SIGNAL(triggered(bool)), this, SLOT(onActionShowWin()));
+    connect(ui->actionShowCapture, SIGNAL(triggered(bool)), this, SLOT(onActionShowCapture()));
+    connect(ui->actionShowUnderCapture, SIGNAL(triggered(bool)), this, SLOT(onActionShowUnderCapture()));
+    connect(ui->actionShowTowFreeThree, SIGNAL(triggered(bool)), this, SLOT(onActionShowTowFreeThree()));
+
+
     connect(scene, SIGNAL(resetted()), this, SLOT(reset()));
 
     ui->graphicsView->setScene(scene);
@@ -273,4 +280,138 @@ void MainWindow::onActionShowFreeThree() {
 
 void MainWindow::reset() {
     SetAiTitle();
+}
+
+void MainWindow::onActionShowWin() {
+    for (int y = 0; y < GSIZE; ++y) {
+        for (int x = 0; x < GSIZE; ++x) {
+            auto t = scene->getToken(x, y);
+            if (game->getToken(x, y))
+                continue;
+            auto match = false;
+            for (const auto &dxy : ALL_DIRS) {
+                char flat[BOARD_SIZE];
+                Patterns::getFlat(
+                        x, y,
+                        dxy[0], dxy[1],
+                        Scene::WHITE, 4,
+                        game->board.black_board,
+                        game->board.white_board,
+                        flat
+                );
+                if (Patterns::isWin(Scene::WHITE, flat)) {
+                    match = true;
+                    break;
+                }
+            }
+
+            t->setDef({
+                              t->def.color,
+                              QColor(!match ? Qt::transparent : Qt::yellow),
+                              t->def.text}
+            );
+            t->update();
+        }
+    }
+    scene->update();
+}
+
+void MainWindow::onActionShowCapture() {
+    for (int y = 0; y < GSIZE; ++y) {
+        for (int x = 0; x < GSIZE; ++x) {
+            auto t = scene->getToken(x, y);
+            if (game->getToken(x, y))
+                continue;
+            auto match = false;
+            for (const auto &dxy : ALL_DIRS) {
+                char flat[BOARD_SIZE];
+                Patterns::getFlat(
+                        x, y,
+                        dxy[0], dxy[1],
+                        Scene::WHITE, 3,
+                        game->board.black_board,
+                        game->board.white_board,
+                        flat
+                );
+                if (Patterns::isCapture(Scene::WHITE, flat)) {
+                    match = true;
+                    break;
+                }
+            }
+
+            t->setDef({
+                              t->def.color,
+                              QColor(!match ? Qt::transparent : Qt::yellow),
+                              t->def.text}
+            );
+            t->update();
+        }
+    }
+    scene->update();
+}
+
+void MainWindow::onActionShowUnderCapture() {
+    for (int y = 0; y < GSIZE; ++y) {
+        for (int x = 0; x < GSIZE; ++x) {
+            auto t = scene->getToken(x, y);
+            if (game->getToken(x, y))
+                continue;
+            auto match = false;
+            for (const auto &dxy : ALL_DIRS) {
+                char flat[BOARD_SIZE];
+                Patterns::getFlat(
+                        x, y,
+                        dxy[0], dxy[1],
+                        Scene::WHITE, 3,
+                        game->board.black_board,
+                        game->board.white_board,
+                        flat
+                );
+                if (Patterns::isUnderCapture(Scene::WHITE, flat)) {
+                    match = true;
+                    break;
+                }
+            }
+
+            t->setDef({
+                              t->def.color,
+                              QColor(!match ? Qt::transparent : Qt::yellow),
+                              t->def.text}
+            );
+            t->update();
+        }
+    }
+    scene->update();
+}
+
+void MainWindow::onActionShowTowFreeThree() {
+    for (int y = 0; y < GSIZE; ++y) {
+        for (int x = 0; x < GSIZE; ++x) {
+            auto t = scene->getToken(x, y);
+            if (game->getToken(x, y))
+                continue;
+            auto match = 0;
+            for (const auto &dxy : ALL_DIRS) {
+                char flat[BOARD_SIZE];
+                Patterns::getFlat(
+                        x, y,
+                        dxy[0], dxy[1],
+                        Scene::WHITE, 5,
+                        game->board.black_board,
+                        game->board.white_board,
+                        flat
+                );
+                if (Patterns::isThreeFree(Scene::WHITE, flat)) {
+                    match++;
+                }
+            }
+            t->setDef({
+                  t->def.color,
+                  QColor(match < 2 ? Qt::transparent : Qt::yellow),
+                  t->def.text}
+            );
+            t->update();
+        }
+    }
+    scene->update();
 }

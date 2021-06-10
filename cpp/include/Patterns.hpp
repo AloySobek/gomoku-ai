@@ -23,12 +23,16 @@ constexpr char P2_THREE_FREE_PTR[3][7] = {
         "022020",
         "020220",
 };
-constexpr char P1_TOW_FREE_PTR[1][5] = {
-        "0110"
-};
-constexpr char P2_TOW_FREE_PTR[1][5] = {
-        "0220"
-};
+constexpr char P1_TOW_FREE_PTR[5] = "0110";
+constexpr char P2_TOW_FREE_PTR[5] = "0220";
+
+constexpr char P1_CAPTURE_PTR[5] = "1221";
+constexpr char P2_CAPTURE_PTR[5] = "2112";
+
+constexpr char P1_WIN_PTR[6] = "11111";
+constexpr char P2_WIN_PTR[6] = "22222";
+
+
 constexpr int8_t ALL_DIRS[4][2] = {
         {1, 0},
         {0, 1},
@@ -65,11 +69,7 @@ public:
         return false;
     }
     static bool isTowFree(const uint8_t v, const char flat[BOARD_SIZE]) {
-        for (const auto &ptr : v == BLACK_STONE ? P1_TOW_FREE_PTR : P2_TOW_FREE_PTR) {
-            if (strstr(flat, ptr))
-                return true;
-        }
-        return false;
+        return strstr(flat, v == BLACK_STONE ? P1_TOW_FREE_PTR : P2_TOW_FREE_PTR) != nullptr;
     }
     static bool isFourFree(const uint8_t v, const char flat[BOARD_SIZE]) {
         for (const auto &ptr : v == BLACK_STONE ? P1_FOUR_FREE_PTR : P2_FOUR_FREE_PTR) {
@@ -77,6 +77,15 @@ public:
                 return true;
         }
         return false;
+    }
+    static bool isWin(const uint8_t v, const char flat[BOARD_SIZE]) {
+        return strstr(flat, v == BLACK_STONE ? P1_WIN_PTR : P2_WIN_PTR) != nullptr;
+    }
+    static bool isCapture(const uint8_t v, const char flat[BOARD_SIZE]) {
+        return strstr(flat, v == BLACK_STONE ? P1_CAPTURE_PTR : P2_CAPTURE_PTR) != nullptr;
+    }
+    static bool isUnderCapture(const uint8_t v, const char flat[BOARD_SIZE]) {
+        return strstr(flat, v == BLACK_STONE ? P2_CAPTURE_PTR : P1_CAPTURE_PTR) != nullptr;
     }
 };
 

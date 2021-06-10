@@ -92,6 +92,10 @@ background-color: rgba(255, 255, 255, 0);</string>
     <addaction name="actionShowFreeTow"/>
     <addaction name="actionShowFreeThree"/>
     <addaction name="actionShowFreeFour"/>
+    <addaction name="actionShowWin"/>
+    <addaction name="actionShowCapture"/>
+    <addaction name="actionShowUnderCapture"/>
+    <addaction name="actionShowTowFreeThree"/>
    </widget>
    <addaction name="menuGame"/>
    <addaction name="menuFile"/>
@@ -178,6 +182,38 @@ background-color: rgba(255, 255, 255, 0);</string>
    </property>
    <property name="shortcut">
     <string>F4</string>
+   </property>
+  </action>
+  <action name="actionShowWin">
+   <property name="text">
+    <string>Show Win</string>
+   </property>
+   <property name="shortcut">
+    <string>F5</string>
+   </property>
+  </action>
+  <action name="actionShowCapture">
+   <property name="text">
+    <string>Show Capture</string>
+   </property>
+   <property name="shortcut">
+    <string>F6</string>
+   </property>
+  </action>
+  <action name="actionShowUnderCapture">
+   <property name="text">
+    <string>Show Under Capture</string>
+   </property>
+   <property name="shortcut">
+    <string>F7</string>
+   </property>
+  </action>
+  <action name="actionShowTowFreeThree">
+   <property name="text">
+    <string>Show Tow Free Three</string>
+   </property>
+   <property name="shortcut">
+    <string>F8</string>
    </property>
   </action>
  </widget>

@@ -46,6 +46,10 @@ public slots:
     void onActionShowFreeFour();
     void onActionShowFreeTow();
     void onActionShowFreeThree();
+    void onActionShowWin();
+    void onActionShowCapture();
+    void onActionShowUnderCapture();
+    void onActionShowTowFreeThree();
     void reset();
 };
 

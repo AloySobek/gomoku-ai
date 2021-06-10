@@ -143,8 +143,11 @@ void Scene::onTokenClicked(Token *token, QGraphicsSceneMouseEvent *event) {
             game->setToken(token->x, token->y, token->def.color);
             token->update();
             Move move{true, static_cast<int8_t>(token->x), static_cast<int8_t>(token->y), static_cast<int8_t>(token->def.color), 0};
+            if (lastPredictedMove.valid)
+                getToken(lastPredictedMove.x, lastPredictedMove.y)->def.highlight = Qt::transparent;
             lastPredictedMove = move;
             reset();
+            getToken(lastPredictedMove.x, lastPredictedMove.y)->def.highlight = Qt::darkRed;
         }
     } else {
         if (!game->getToken(token->x, token->y))
@@ -154,10 +157,13 @@ void Scene::onTokenClicked(Token *token, QGraphicsSceneMouseEvent *event) {
             token->update();
             auto move  = game->predictMove(BLACK);
             if (move.valid) {
+                if (lastPredictedMove.valid)
+                    getToken(lastPredictedMove.x, lastPredictedMove.y)->def.highlight = Qt::transparent;
                 lastPredictedMove = move;
                 game->setToken(move.x, move.y, move.v);
+                reset();
+                getToken(lastPredictedMove.x, lastPredictedMove.y)->def.highlight = Qt::darkRed;
             }
-            reset();
         }
     }
 }

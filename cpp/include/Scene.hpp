@@ -52,7 +52,8 @@ public:
     bool devMode = false;
     bool showMask = false;
     bool pvpMode = false;
-
+    TokenColor playAs = WHITE;
+    void startGame();
     explicit Scene(Game *game, QObject *parent = nullptr);
     ~Scene() override;
     Game *game;

@@ -136,10 +136,10 @@ void Scene::onTokenClicked(Token *token, QGraphicsSceneMouseEvent *event) {
     } else if (pvpMode) {
         if (!game->getToken(token->x, token->y))
         {
-            if (lastPredictedMove.v == WHITE)
-                token->def.color = BLACK;
-            else
+            if (lastPredictedMove.v == BLACK)
                 token->def.color = WHITE;
+            else
+                token->def.color = BLACK;
             game->setToken(token->x, token->y, token->def.color);
             token->update();
             Move move{true, static_cast<int8_t>(token->x), static_cast<int8_t>(token->y), static_cast<int8_t>(token->def.color), 0};
@@ -176,4 +176,8 @@ void Scene::reset() {
     }
     update();
     emit resetted();
+}
+
+void Scene::startGame() {
+    // TODO If playAs==White and PvAI make ai move right away
 }

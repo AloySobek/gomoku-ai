@@ -29,11 +29,11 @@ public:
     explicit MainWindow(Game *game, QWidget *parent = nullptr);
     ~MainWindow() override;
     void SetAiTitle();
+    Scene *scene;
+    Game *game;
 
 private:
     Ui::MainWindow *ui;
-    Scene *scene;
-    Game *game;
     bool isDevMode();
 public slots:
     void onActionExit();

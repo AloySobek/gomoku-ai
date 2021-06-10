@@ -37,6 +37,9 @@ set(PROJECT_SOURCES
         src/main.cpp
         src/mainwindow.cpp
         src/mainwindow.ui
+        src/Startup.cpp
+        include/Startup.hpp
+        src/Startup.ui
         src/Scene.cpp
         src/Token.cpp
         include/Token.hpp

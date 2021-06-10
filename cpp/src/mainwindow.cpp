@@ -21,7 +21,7 @@ MainWindow::MainWindow(Game *game, QWidget *parent)
     connect(ui->actionDevMode, SIGNAL(toggled(bool)), this, SLOT(onActionDevMode()));
     connect(ui->actionDevMode, SIGNAL(toggled(bool)), this, SLOT(reset()));
     connect(ui->actionShowMask, SIGNAL(toggled(bool)), this, SLOT(onActionShowMask()));
-    connect(ui->actionPvPMode, SIGNAL(toggled(bool)), this, SLOT(onActionPvPMode()));
+//    connect(ui->actionPvPMode, SIGNAL(toggled(bool)), this, SLOT(onActionPvPMode()));
     connect(ui->actionShowFreeTow, SIGNAL(triggered(bool)), this, SLOT(onActionShowFreeTow()));
     connect(ui->actionShowFreeThree, SIGNAL(triggered(bool)), this, SLOT(onActionShowFreeThree()));
     connect(ui->actionShowFreeFour, SIGNAL(triggered(bool)), this, SLOT(onActionShowFreeFour()));

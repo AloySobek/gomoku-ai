@@ -88,7 +88,6 @@ background-color: rgba(255, 255, 255, 0);</string>
     <addaction name="actionExit"/>
     <addaction name="separator"/>
     <addaction name="actionShowMask"/>
-    <addaction name="actionPvPMode"/>
     <addaction name="separator"/>
     <addaction name="actionShowFreeTow"/>
     <addaction name="actionShowFreeThree"/>

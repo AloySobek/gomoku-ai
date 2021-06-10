@@ -22,6 +22,7 @@ Move Game::predictMove(int8_t v)
 {
     int32_t move;
     board.prunedCount = 0;
+    board.leafVisited = 0;
     auto start = std::chrono::high_resolution_clock::now();
 
     if (v == BLACK_STONE)

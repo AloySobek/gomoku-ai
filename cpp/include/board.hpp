@@ -18,6 +18,7 @@ class Board
 {
 public:
     uint64_t prunedCount = 0;
+    uint64_t leafVisited = 0;
     Board()
     {
         move_map[BOARD_SIZE / 2 * BOARD_SIZE + BOARD_SIZE / 2] = 1;

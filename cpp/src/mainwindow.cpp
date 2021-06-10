@@ -145,12 +145,14 @@ void MainWindow::SetAiTitle() {
                 "<p>Gomoku will crush you!</p>"
                 "<p>Last Move took: %1 sec</p>"
                 "<p>Prune count: %2 </p>"
-                "<p>Game in dev mode: %3 </p>"
+                "<p>Leaf count: %3 </p>"
+                "<p>Game in dev mode: %4 </p>"
                 "</body></html>"
         )
         .arg(
                 QString::number(scene->lastPredictedMove.tookSecond, 'g', 4),
                 QString::number(scene->game->board.prunedCount),
+                QString::number(scene->game->board.leafVisited),
                 scene->devMode ? "<span style=\" color:#cc0000;\">True</span>" : "False"
         )
     );

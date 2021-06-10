@@ -13,9 +13,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # set(CMAKE_CXX_FLAGS "-Werror -Wall -Wextra")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
-set(DCMAKE_CXX_FLAGS "-pg")
-set(DCMAKE_EXE_LINKER_FLAGS "-pg")
-set(DCMAKE_SHARED_LINKER_FLAGS "-pg")
+# set(DCMAKE_CXX_FLAGS "-pg")
+# set(DCMAKE_EXE_LINKER_FLAGS "-pg")
+# set(DCMAKE_SHARED_LINKER_FLAGS "-pg")
 
 # QtCreator supports the following variables for Android, which are identical to qmake Android variables.
 # Check https://doc.qt.io/qt/deployment-android.html for more information.

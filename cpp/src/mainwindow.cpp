@@ -1,5 +1,4 @@
 #include <QJsonArray>
-#include <Patterns.hpp>
 
 #include "mainwindow.hpp"
 #include "./ui_mainwindow.h"

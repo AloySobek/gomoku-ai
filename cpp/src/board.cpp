@@ -6,14 +6,16 @@
 
 Board::Board()
 {
-    move_map[BOARD_SIZE / 2 * BOARD_SIZE + BOARD_SIZE / 2] = 1;
     fill_zobrist_table();
+    reset();
+    (void)0;
 }
 
 bool Board::place_stone_on_board(int8_t x, int8_t y, bool is_black, uint8_t *captures)
 {
     if (x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE)
     {
+        setToken(x, y, is_black ? BLACK : WHITE);
         if (is_black)
         {
             black_board[y] |= 0x40000 >> x;
@@ -76,6 +78,7 @@ bool Board::remove_stone_from_board(int8_t x, int8_t y, bool is_black, uint8_t *
 {
     if (x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE)
     {
+        setToken(x, y, EMPTY);
         if (is_black)
         {
             black_board[y] &= ~(0x40000 >> x);
@@ -140,37 +143,15 @@ int32_t Board::minimax(int8_t depth, int32_t alpha, int32_t beta, int8_t x, int8
 
     if (depth == 0)
     {
-        int32_t black_score{0};
-        int32_t white_score{0};
-
+        move = is_black ? BLACK : WHITE;
+        result = _; // TODO;
+        int32_t score;
         if (hash_map.find(hash) != hash_map.end() && ++cache_hit_count)
             score = hash_map[hash];
         else
         {
-            for (uint16_t y{0}; y < BOARD_SIZE; ++y)
-                for (uint16_t x{0}; x < BOARD_SIZE; ++x)
-                    if (move_map[y * BOARD_SIZE + x])
-                    {
-                        black_score += five_in_a_row(x,y,true) ? 100000 : 0;
-                        black_score += open_four(x,y,true) ? 15000 : 0;
-                        black_score += simple_four(x,y,true) ? 10000 : 0;
-                        black_score += open_three(x,y,true) ? 10000 : 0;
-                        black_score += simple_three(x,y,true) ? 500 : 0;
-                        black_score += open_two(x,y,true) ? 100 : 0;
-                        black_score += simple_two(x,y,true) ? 50 : 0; 
-
-                        white_score += five_in_a_row(x,y,false) ? 100000 : 0;
-                        white_score += open_four(x,y,false) ? 15000 : 0;
-                        white_score += simple_four(x,y,false) ? 10000 : 0;
-                        white_score += open_three(x,y,false) ? 10000 : 0;
-                        white_score += simple_three(x,y,false) ? 500 : 0;
-                        white_score += open_two(x,y,false) ? 100 : 0;
-                        white_score += simple_two(x,y,false) ? 50 : 0;
-                    }
-            if ((is_black && maximizer) || (!is_black && !maximizer))
-                score = black_score - white_score;
-            else
-                score = white_score - black_score;
+//            std::clog << *this;
+            score = -Eval(); // WHITE BLACK SWAPPED
             hash_map[hash] = score;
         }
         return (score);
@@ -188,7 +169,7 @@ int32_t Board::minimax(int8_t depth, int32_t alpha, int32_t beta, int8_t x, int8
                         max_h = std::max(max_h, minimax(depth-1, alpha, beta,x,y, false, !is_black));
                         remove_stone_from_board(x, y, is_black, &captures);
                         alpha = std::max(alpha, max_h);
-                        if (beta <= alpha && ++pruned_count)
+                        if (beta >= alpha && ++pruned_count)
                             return (max_h);
                     }
         return (max_h);
@@ -248,6 +229,11 @@ int32_t Board::ai_move(bool is_black)
 
 void Board::reset()
 {
+    for (int y = 0; y < BOARD_SIZE; ++y) {
+        for (int x = 0; x < BOARD_SIZE; ++x) {
+            setToken(x, y, EMPTY);
+        }
+    }
     for (int8_t i{0}; i < BOARD_SIZE; ++i)
     {
         black_board[i] = 0;
@@ -255,6 +241,7 @@ void Board::reset()
         for (int8_t j{0}; j < BOARD_SIZE; ++j)
             move_map[i * BOARD_SIZE + j] = 0;
     }
+    setToken(BOARD_SIZE / 2, BOARD_SIZE / 2, BLACK);
     move_map[BOARD_SIZE / 2 * BOARD_SIZE + BOARD_SIZE / 2] = 1;
 }
 
@@ -764,4 +751,279 @@ bool Board::open_two(int8_t x, int8_t y, bool is_black)
 bool Board::simple_two(int8_t x, int8_t y, bool is_black)
 {
     return (false);
+}
+
+int Board::PtrMatchFree3(Board::Color color) const {
+
+    if (color == WHITE)
+    {
+        return PtrGlobalMatch(rows, wFree3_2) +
+               PtrGlobalMatch(columns, wFree3_2) +
+               PtrGlobalMatch(up, wFree3_2, true) +
+               PtrGlobalMatch(down, wFree3_2, true) +
+
+               PtrGlobalMatch(rows, wFree3_3) +
+               PtrGlobalMatch(columns, wFree3_3) +
+               PtrGlobalMatch(up, wFree3_3, true) +
+               PtrGlobalMatch(down, wFree3_3, true) -
+
+               PtrGlobalMatch(rows, wFree3_1) -
+               PtrGlobalMatch(columns, wFree3_1) -
+               PtrGlobalMatch(up, wFree3_1, true) -
+               PtrGlobalMatch(down, wFree3_1, true) +
+
+               PtrGlobalMatch(rows, wFree3_4) +
+               PtrGlobalMatch(columns, wFree3_4) +
+               PtrGlobalMatch(up, wFree3_4, true) +
+               PtrGlobalMatch(down, wFree3_4, true) +
+
+               PtrGlobalMatch(rows, wFree3_5) +
+               PtrGlobalMatch(columns, wFree3_5) +
+               PtrGlobalMatch(up, wFree3_5, true) +
+               PtrGlobalMatch(down, wFree3_5, true);
+    }
+    else
+    {
+        return PtrGlobalMatch(rows, bFree3_2) +
+               PtrGlobalMatch(columns, bFree3_2) +
+               PtrGlobalMatch(up, bFree3_2, true) +
+               PtrGlobalMatch(down, bFree3_2, true) +
+
+               PtrGlobalMatch(rows, bFree3_3) +
+               PtrGlobalMatch(columns, bFree3_3) +
+               PtrGlobalMatch(up, bFree3_3, true) +
+               PtrGlobalMatch(down, bFree3_3, true)  -
+
+               PtrGlobalMatch(rows, bFree3_1)  -
+               PtrGlobalMatch(columns, bFree3_1)  -
+               PtrGlobalMatch(up, bFree3_1, true)  -
+               PtrGlobalMatch(down, bFree3_1, true) +
+
+               PtrGlobalMatch(rows, bFree3_4) +
+               PtrGlobalMatch(columns, bFree3_4) +
+               PtrGlobalMatch(up, bFree3_4, true) +
+               PtrGlobalMatch(down, bFree3_4, true) +
+
+               PtrGlobalMatch(rows, bFree3_5) +
+               PtrGlobalMatch(columns, bFree3_5) +
+               PtrGlobalMatch(up, bFree3_5, true) +
+               PtrGlobalMatch(down, bFree3_5, true);
+    }
+}
+
+int Board::PtrMatchHalf4(Board::Color color) const {
+    if (color == Color::WHITE)
+    {
+        return PtrGlobalMatch(rows, wHalf4_1) +
+               PtrGlobalMatch(columns, wHalf4_1) +
+               PtrGlobalMatch(up, wHalf4_1, true) +
+               PtrGlobalMatch(down, wHalf4_1, true) +
+
+               PtrGlobalMatch(rows, wHalf4_2) +
+               PtrGlobalMatch(columns, wHalf4_2) +
+               PtrGlobalMatch(up, wHalf4_2, true) +
+               PtrGlobalMatch(down, wHalf4_2, true) +
+
+               PtrGlobalMatch(rows, wHalf4_3) +
+               PtrGlobalMatch(columns, wHalf4_3) +
+               PtrGlobalMatch(up, wHalf4_3, true) +
+               PtrGlobalMatch(down, wHalf4_3, true) +
+
+               PtrGlobalMatch(rows, wHalf4_4) +
+               PtrGlobalMatch(columns, wHalf4_4) +
+               PtrGlobalMatch(up, wHalf4_4, true) +
+               PtrGlobalMatch(down, wHalf4_4, true) +
+
+               PtrGlobalMatch(rows, wHalf4_5) +
+               PtrGlobalMatch(columns, wHalf4_5) +
+               PtrGlobalMatch(up, wHalf4_5, true) +
+               PtrGlobalMatch(down, wHalf4_5, true) +
+
+               PtrGlobalMatch(rows, wHalf4_6, false, END) +
+               PtrGlobalMatch(columns, wHalf4_6, false, END) +
+               PtrGlobalMatch(up, wHalf4_6, true, END) +
+               PtrGlobalMatch(down, wHalf4_6, true, END) +
+
+               PtrGlobalMatch(rows, wHalf4_7, false, BEGIN) +
+               PtrGlobalMatch(columns, wHalf4_7, false, BEGIN) +
+               PtrGlobalMatch(up, wHalf4_7, true, BEGIN) +
+               PtrGlobalMatch(down, wHalf4_7, true, BEGIN);
+
+    }
+    else
+    {
+        return PtrGlobalMatch(rows, bHalf4_1) +
+               PtrGlobalMatch(columns, bHalf4_1) +
+               PtrGlobalMatch(up, bHalf4_1, true) +
+               PtrGlobalMatch(down, bHalf4_1, true) +
+
+               PtrGlobalMatch(rows, bHalf4_2) +
+               PtrGlobalMatch(columns, bHalf4_2) +
+               PtrGlobalMatch(up, bHalf4_2, true) +
+               PtrGlobalMatch(down, bHalf4_2, true) +
+
+               PtrGlobalMatch(rows, bHalf4_3) +
+               PtrGlobalMatch(columns, bHalf4_3) +
+               PtrGlobalMatch(up, bHalf4_3, true) +
+               PtrGlobalMatch(down, bHalf4_3, true) +
+
+               PtrGlobalMatch(rows, bHalf4_4) +
+               PtrGlobalMatch(columns, bHalf4_4) +
+               PtrGlobalMatch(up, bHalf4_4, true) +
+               PtrGlobalMatch(down, bHalf4_4, true) +
+
+               PtrGlobalMatch(rows, bHalf4_5) +
+               PtrGlobalMatch(columns, bHalf4_5) +
+               PtrGlobalMatch(up, bHalf4_5, true) +
+               PtrGlobalMatch(down, bHalf4_5, true) +
+
+               PtrGlobalMatch(rows, bHalf4_6, false, END) +
+               PtrGlobalMatch(columns, bHalf4_6, false, END) +
+               PtrGlobalMatch(up, bHalf4_6, true, END) +
+               PtrGlobalMatch(down, bHalf4_6, true, END) +
+
+               PtrGlobalMatch(rows, bHalf4_7, false, BEGIN) +
+               PtrGlobalMatch(columns, bHalf4_7, false, BEGIN) +
+               PtrGlobalMatch(up, bHalf4_7, true, BEGIN) +
+               PtrGlobalMatch(down, bHalf4_7, true, BEGIN);
+    }
+}
+
+int Board::PtrMatchHalf3(Board::Color color) const {
+    if (color == WHITE)
+    {
+        return PtrGlobalMatch(rows, wHalf3_1) +
+               PtrGlobalMatch(columns, wHalf3_1) +
+               PtrGlobalMatch(up, wHalf3_1, true) +
+               PtrGlobalMatch(down, wHalf3_1, true) +
+
+               PtrGlobalMatch(rows, wHalf3_2) +
+               PtrGlobalMatch(columns, wHalf3_2) +
+               PtrGlobalMatch(up, wHalf3_2, true) +
+               PtrGlobalMatch(down, wHalf3_2, true) +
+
+               PtrGlobalMatch(rows, wHalf3_3) +
+               PtrGlobalMatch(columns, wHalf3_3) +
+               PtrGlobalMatch(up, wHalf3_3, true) +
+               PtrGlobalMatch(down, wHalf3_3, true) +
+
+               PtrGlobalMatch(rows, wHalf3_4) +
+               PtrGlobalMatch(columns, wHalf3_4) +
+               PtrGlobalMatch(up, wHalf3_4, true) +
+               PtrGlobalMatch(down, wHalf3_4, true) +
+
+               PtrGlobalMatch(rows, wHalf3_5) +
+               PtrGlobalMatch(columns, wHalf3_5) +
+               PtrGlobalMatch(up, wHalf3_5, true) +
+               PtrGlobalMatch(down, wHalf3_5, true) +
+
+               PtrGlobalMatch(rows, wHalf3_6) +
+               PtrGlobalMatch(columns, wHalf3_6) +
+               PtrGlobalMatch(up, wHalf3_6, true) +
+               PtrGlobalMatch(down, wHalf3_6, true);
+    }
+    else
+    {
+        return PtrGlobalMatch(rows, bHalf3_1) +
+               PtrGlobalMatch(columns, bHalf3_1) +
+               PtrGlobalMatch(up, bHalf3_1, true) +
+               PtrGlobalMatch(down, bHalf3_1, true) +
+
+               PtrGlobalMatch(rows, bHalf3_2) +
+               PtrGlobalMatch(columns, bHalf3_2) +
+               PtrGlobalMatch(up, bHalf3_2, true) +
+               PtrGlobalMatch(down, bHalf3_2, true) +
+
+               PtrGlobalMatch(rows, bHalf3_3) +
+               PtrGlobalMatch(columns, bHalf3_3) +
+               PtrGlobalMatch(up, bHalf3_3, true) +
+               PtrGlobalMatch(down, bHalf3_3, true) +
+
+               PtrGlobalMatch(rows, bHalf3_4) +
+               PtrGlobalMatch(columns, bHalf3_4) +
+               PtrGlobalMatch(up, bHalf3_4, true) +
+               PtrGlobalMatch(down, bHalf3_4, true) +
+
+               PtrGlobalMatch(rows, bHalf3_5) +
+               PtrGlobalMatch(columns, bHalf3_5) +
+               PtrGlobalMatch(up, bHalf3_5, true) +
+               PtrGlobalMatch(down, bHalf3_5, true) +
+
+               PtrGlobalMatch(rows, bHalf3_6) +
+               PtrGlobalMatch(columns, bHalf3_6) +
+               PtrGlobalMatch(up, bHalf3_6, true) +
+               PtrGlobalMatch(down, bHalf3_6, true);
+    }
+}
+
+bool Board::PtrMatch(const Ptr &ptr) const {
+    if (PtrGlobalMatch(rows, ptr))
+        return true;
+    else if (PtrGlobalMatch(columns, ptr))
+        return true;
+    else if (PtrGlobalMatch(up, ptr, true))
+        return true;
+    else if (PtrGlobalMatch(down, ptr, true))
+        return true;
+    else
+        return false;
+}
+
+int Board::Eval() const {
+    // Game ended
+    switch (result) {
+        case WHITE_WIN:
+            return +100;
+        case BLACK_WIN:
+            return -100;
+        case DRAW: // No available moves
+            return 0;
+        default:
+            break;
+    }
+    if (PtrMatch(wFive))
+        return +50;
+    else if (PtrMatch(bFive))
+        return -50;
+    else if (PtrMatch(wZebra) && move == WHITE)
+        return +30;
+    else if (PtrMatch(bZebra) && move == BLACK)
+        return -30;
+    int evalScore{0};
+
+    auto half4sW = PtrMatchHalf4(WHITE);
+    auto half4sB = PtrMatchHalf4(BLACK);
+    // Free 4 what is win or flanked four and your turn what is almost win
+    if (PtrMatch(wFree4) || (half4sW && move == WHITE))
+        return +40;
+    else if (PtrMatch(bFree4) || (half4sB && move == BLACK))
+        return -40;
+    else if (half4sW > 1)
+        return +35;
+    else if (half4sB > 1)
+        return -35;
+    evalScore += (half4sW - half4sB) * 2;
+
+    auto free3sW = PtrMatchFree3(WHITE);
+    auto free3sB = PtrMatchFree3(BLACK);
+    // Free 3 what is win or flanked four and your turn what is almost win
+    if (free3sW && move == WHITE)
+        return +15;
+    else if (free3sB && move == BLACK)
+        return -15;
+    else if (free3sW > 1 && !free3sB)
+        return +13;
+    else if (free3sB > 1 && !free3sW)
+        return -13;
+    evalScore += (free3sW - free3sB) * 2;
+
+    // Half 3 what is not a win but counts or flanked four and your turn what is not almost win
+    auto half3sW = PtrMatchHalf3(WHITE);
+    auto half3sB = PtrMatchHalf3(BLACK);
+    evalScore += (half3sW - half3sB);
+
+    // Future captures for available moves // TODO cW - cB * 4
+
+    evalScore += ((int)white_captures_count - (int)black_captures_count) * 7;
+    return (evalScore);
 }

@@ -42,6 +42,14 @@ constexpr int8_t ALL_DIRS[4][2] = {
         {1, -1},
 };
 
+#ifndef BOARD_SIZE
+# define BOARD_SIZE 19
+# define BS BOARD_SIZE
+
+# define EMPTY_STONE 0
+# define BLACK_STONE 1
+# define WHITE_STONE 2
+#endif
 class Patterns {
 public:
     static void getFlat(int x, int y, int dx, int dy, uint8_t v, uint8_t extent, const int32_t bb[BOARD_SIZE], const int32_t bw[BOARD_SIZE], char res[BOARD_SIZE]) {

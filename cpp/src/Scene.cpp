@@ -8,7 +8,7 @@ void Scene::drawBackground(QPainter *painter, const QRectF &rect) {
     QRectF pr(imPanel.rect());
     pr.moveLeft(bg.rect().width());
     painter->drawPixmap(pr, imPanel, QRectF(imPanel.rect()));
-    qDebug() << "drawBackground" << "bg valid: " << !bg.isNull();
+//    qDebug() << "drawBackground" << "bg valid: " << !bg.isNull();
 }
 
 Scene::Scene(Game *game, QObject *parent)
@@ -24,7 +24,7 @@ Scene::Scene(Game *game, QObject *parent)
         for (int x = 0; x < GSIZE; ++x) {
             auto t = new Token(x, y);
             this->addItem(t);
-            qDebug() << "xy: " << x << y;
+//            qDebug() << "xy: " << x << y;
             t->setPos(this->boardPosToView(QPoint(x, y)));
             tokens[y][x] = t;
         }
@@ -51,7 +51,7 @@ QPoint Scene::boardPosToView(QPoint pt) {
     QPoint p;
     p.setX(pt.x() * this->pSize + this->offsetX - this->pHeight);
     p.setY(pt.y() * this->pSize + this->offsetY - this->pHeight);
-    qDebug() << p;
+//    qDebug() << p;
     return p;
 }
 

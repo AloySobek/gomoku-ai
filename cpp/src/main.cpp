@@ -3,9 +3,11 @@
 #include "mainwindow.hpp"
 #include "Startup.hpp"
 #include "game.hpp"
+#include <thread>
 
 int main(int argc, char *argv[])
 {
+    qDebug() << std::thread::hardware_concurrency();
     QApplication a(argc, argv);
     Game game;
     MainWindow w(&game, nullptr);

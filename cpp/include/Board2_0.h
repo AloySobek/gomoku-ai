@@ -267,7 +267,6 @@ public:
                 }
             }
         }
-//        bs.GenerateAvailableMovesInternal();
         return is;
     }
     int getTokenCount() const
@@ -510,7 +509,7 @@ int Board::Eval() const {
             return +100;
         case BLACK_WIN:
             return -100;
-        case DRAW:
+        case DRAW: // No available moves
             return 0;
         default:
             break;

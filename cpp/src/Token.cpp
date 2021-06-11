@@ -59,14 +59,14 @@ Scene* Token::getScene() {
 }
 
 void Token::hoverEnterEvent(QGraphicsSceneHoverEvent *event) {
-    qDebug() << "hoverEnterEvent";
+//    qDebug() << "hoverEnterEvent";
     QGraphicsItem::hoverEnterEvent(event);
     hovered = true;
     update();
 }
 
 void Token::hoverLeaveEvent(QGraphicsSceneHoverEvent *event) {
-    qDebug() << "hoverLeaveEvent";
+//    qDebug() << "hoverLeaveEvent";
     QGraphicsItem::hoverLeaveEvent(event);
     hovered = false;
     update();

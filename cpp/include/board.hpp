@@ -19,8 +19,6 @@
 class Board
 {
 public:
-    uint64_t score{0};
-
     uint64_t nodes_count{0};
     uint64_t pruned_count{0};
     uint64_t cache_hit_count{0};
@@ -40,6 +38,14 @@ public:
     void reset();
     void print();
 
+private:
+    uint64_t *zobrist_table{new uint64_t[BOARD_SIZE * BOARD_SIZE * 2]()};
+    std::unordered_map<uint64_t, int32_t> hash_map;
+    uint64_t hash{0};
+
+    void fill_zobrist_table();
+    uint64_t get_hash();
+
     bool five_in_a_row(int8_t x, int8_t y, bool is_black);
     bool open_four(int8_t x, int8_t y, bool is_black);
     bool simple_four(int8_t x, int8_t y, bool is_black);
@@ -47,14 +53,6 @@ public:
     bool simple_three(int8_t x, int8_t y, bool is_black);
     bool open_two(int8_t x, int8_t y, bool is_black);
     bool simple_two(int8_t x, int8_t y, bool is_black);
-
-    std::unordered_map<uint64_t, int32_t> hash_map;
-private:
-    uint64_t *zobrist_table{new uint64_t[BOARD_SIZE * BOARD_SIZE * 2]()};
-    uint64_t hash{0};
-
-    void fill_zobrist_table();
-    uint64_t get_hash();
 };
 
 #endif

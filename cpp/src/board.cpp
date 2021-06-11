@@ -6,142 +6,201 @@
 
 Board::Board()
 {
-    move_map[BOARD_SIZE / 2 * BOARD_SIZE + BOARD_SIZE / 2] = 1;
+    reset();
     fill_zobrist_table();
 }
 
 bool Board::place_stone_on_board(int8_t x, int8_t y, bool is_black, uint8_t *captures)
 {
-    if (x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE)
+    if (is_black)
     {
-        if (is_black)
+        if (y+1 < BOARD_SIZE && y-2 >= 0
+                && (white_board[y-2] & black_board[y-1] & white_board[y+1] & (0x40000 >> x)))
+            return (false);
+        if (y+1 < BOARD_SIZE && y-2 >= 0 && x+2 < BOARD_SIZE && x-1 >= 0
+                && ((white_board [y-2] << 2) & (black_board[y-1] << 1) & (white_board [y+1] >> 1) & (0x40000 >> x)))
+            return (false);
+        if (x+2 < BOARD_SIZE && x-1 >= 0
+                && ((white_board[y] << 2) & (black_board[y] << 1) & (white_board[y] >> 1) & (0x40000 >> x)))
+            return (false);
+        if (y+2 < BOARD_SIZE && y-1 >= 0 && x+2 > BOARD_SIZE && x-1 >= 0
+                && ((white_board[y+2] << 2) & (black_board[y+1] << 1) & (white_board[y-1] >> 1) & (0x40000 >> x)))
+            return (false);
+        if (y+2 < BOARD_SIZE && y-1 >= 0
+                && (white_board[y+2] & black_board[y+1] & white_board[y-1] & (0x40000 >> x)))
+            return (false);
+        if (y+2 < BOARD_SIZE && y-1 >= 0 && x+1 < BOARD_SIZE && x-2 >= 0
+                && ((white_board[y+2] >> 2) & (black_board[y+1] >> 1) & (white_board[y-1] << 1) & (0x40000 >> x)))
+            return (false);
+        if (x+1 < BOARD_SIZE && x-2 >= 0
+                && ((white_board[y] >> 2) & (black_board[y] >> 1) & (white_board[y] << 1) & (0x40000 >> x)))
+            return (false);
+        if (y+1 < BOARD_SIZE && y-2 >= 0 && x+1 < BOARD_SIZE && x-2 >= 0
+                && ((white_board[y-2] >> 2) & (black_board[y-1] >> 1) & (white_board[y+1] << 1) & (0x40000 >> x)))
+            return (false);
+        black_board[y] |= 0x40000 >> x;
+        hash ^= zobrist_table[y * BOARD_SIZE + x];
+        if (captures)
         {
-            black_board[y] |= 0x40000 >> x;
-            hash ^= zobrist_table[y * BOARD_SIZE + x];
-            if (captures)
-            {
-                if (y-3 >= 0 && (black_board[y-3] & white_board[y-2] & white_board[y-1] & (0x40000 >> x)))
-                    remove_stone_from_board(x,y-1,false), remove_stone_from_board(x,y-2,false), *captures |= 0x1, ++black_captures_count;
-                if (y-3 >= 0 && x+3 < BOARD_SIZE && ((black_board[y-3] << 3) & (white_board[y-2] << 2) & (white_board[y-1] << 1) & (0x40000 >> x)))
-                    remove_stone_from_board(x+1,y-1,false), remove_stone_from_board(x+2,y-2,false), *captures |= 0x2, ++black_captures_count;
-                if (x+3 < BOARD_SIZE && ((black_board[y] << 3) & (white_board[y] << 2) & (white_board[y] << 1) & (0x40000 >> x)))
-                    remove_stone_from_board(x+1,y,false), remove_stone_from_board(x+2,y,false), *captures |= 0x4, ++black_captures_count;
-                if (y+3 < BOARD_SIZE && x+3 < BOARD_SIZE && ((black_board[y+3] << 3) & (white_board[y+2] << 2) & (white_board[y+1] << 1) & (0x40000 >> x)))
-                    remove_stone_from_board(x+1,y+1,false), remove_stone_from_board(x+2,y+2,false), *captures |= 0x8, ++black_captures_count;
-                if (y+3 < BOARD_SIZE && (black_board[y+3] & white_board[y+2] & white_board[y+1] & (0x40000 >> x)))
-                    remove_stone_from_board(x,y+1,false), remove_stone_from_board(x,y+2,false), *captures |= 0x10, ++black_captures_count;
-                if (y+3 < BOARD_SIZE && x-3 >= 0 && ((black_board[y+3] >> 3) & (white_board[y+2] >> 2) & (white_board[y+1] >> 1) & (0x40000 >> x)))
-                    remove_stone_from_board(x-1,y+1,false), remove_stone_from_board(x-2,y+2,false), *captures |= 0x20, ++black_captures_count;
-                if (x-3 >= 0 && ((black_board[y] >> 3) & (white_board[y] >> 2) & (white_board[y] >> 1) & (0x40000 >> x)))
-                    remove_stone_from_board(x-1,y,false), remove_stone_from_board(x-2,y,false), *captures |= 0x40, ++black_captures_count;
-                if (y-3 >= 0 && x-3 >= 0 && ((black_board[y-3] >> 3) & (white_board[y-2] >> 2) & (white_board[y-1] >> 1) & (0x40000 >> x)))
-                    remove_stone_from_board(x-1,y-1,false), remove_stone_from_board(x-2,y-2,false), *captures |= 0x80, ++black_captures_count;
-            }
+            if (y-3 >= 0 && (black_board[y-3] & white_board[y-2] & white_board[y-1] & (0x40000 >> x)))
+                remove_stone_from_board(x,y-1,false), remove_stone_from_board(x,y-2,false), *captures |= 0x1, ++black_captures_count;
+            if (y-3 >= 0 && x+3 < BOARD_SIZE && ((black_board[y-3] << 3) & (white_board[y-2] << 2) & (white_board[y-1] << 1) & (0x40000 >> x)))
+                remove_stone_from_board(x+1,y-1,false), remove_stone_from_board(x+2,y-2,false), *captures |= 0x2, ++black_captures_count;
+            if (x+3 < BOARD_SIZE && ((black_board[y] << 3) & (white_board[y] << 2) & (white_board[y] << 1) & (0x40000 >> x)))
+                remove_stone_from_board(x+1,y,false), remove_stone_from_board(x+2,y,false), *captures |= 0x4, ++black_captures_count;
+            if (y+3 < BOARD_SIZE && x+3 < BOARD_SIZE && ((black_board[y+3] << 3) & (white_board[y+2] << 2) & (white_board[y+1] << 1) & (0x40000 >> x)))
+                remove_stone_from_board(x+1,y+1,false), remove_stone_from_board(x+2,y+2,false), *captures |= 0x8, ++black_captures_count;
+            if (y+3 < BOARD_SIZE && (black_board[y+3] & white_board[y+2] & white_board[y+1] & (0x40000 >> x)))
+                remove_stone_from_board(x,y+1,false), remove_stone_from_board(x,y+2,false), *captures |= 0x10, ++black_captures_count;
+            if (y+3 < BOARD_SIZE && x-3 >= 0 && ((black_board[y+3] >> 3) & (white_board[y+2] >> 2) & (white_board[y+1] >> 1) & (0x40000 >> x)))
+                remove_stone_from_board(x-1,y+1,false), remove_stone_from_board(x-2,y+2,false), *captures |= 0x20, ++black_captures_count;
+            if (x-3 >= 0 && ((black_board[y] >> 3) & (white_board[y] >> 2) & (white_board[y] >> 1) & (0x40000 >> x)))
+                remove_stone_from_board(x-1,y,false), remove_stone_from_board(x-2,y,false), *captures |= 0x40, ++black_captures_count;
+            if (y-3 >= 0 && x-3 >= 0 && ((black_board[y-3] >> 3) & (white_board[y-2] >> 2) & (white_board[y-1] >> 1) & (0x40000 >> x)))
+                remove_stone_from_board(x-1,y-1,false), remove_stone_from_board(x-2,y-2,false), *captures |= 0x80, ++black_captures_count;
         }
-        else
-        {
-            white_board[y] |= 0x40000 >> x;
-            hash ^= zobrist_table[(2 + y) * BOARD_SIZE + x];
-            if (captures)
-            {
-                if (y-3 >= 0 && (white_board[y-3] & black_board[y-2] & black_board[y-1] & (0x40000 >> x)))
-                    remove_stone_from_board(x,y-1,true), remove_stone_from_board(x,y-2,true), *captures |= 0x1, ++white_captures_count;
-                if (y-3 >= 0 && x+3 < BOARD_SIZE && ((white_board[y-3] << 3) & (black_board[y-2] << 2) & (black_board[y-1] << 1) & (0x40000 >> x)))
-                    remove_stone_from_board(x+1,y-1,true), remove_stone_from_board(x+2,y-2,true), *captures |= 0x2, ++white_captures_count;
-                if (x+3 < BOARD_SIZE && ((white_board[y] << 3) & (black_board[y] << 2) & (black_board[y] << 1) & (0x40000 >> x)))
-                    remove_stone_from_board(x+1,y,true), remove_stone_from_board(x+2,y,true), *captures |= 0x4, ++white_captures_count;
-                if (y+3 < BOARD_SIZE && x+3 < BOARD_SIZE && ((white_board[y+3] << 3) & (black_board[y+2] << 2) & (black_board[y+1] << 1) & (0x40000 >> x)))
-                    remove_stone_from_board(x+1,y+1,true), remove_stone_from_board(x+2,y+2,true), *captures |= 0x8, ++white_captures_count;
-                if (y+3 < BOARD_SIZE && (white_board[y+3] & black_board[y+2] & black_board[y+1] & (0x40000 >> x)))
-                    remove_stone_from_board(x,y+1,true), remove_stone_from_board(x,y+2,true), *captures |= 0x10, ++white_captures_count;
-                if (y+3 < BOARD_SIZE && x-3 >= 0 && ((white_board[y+3] >> 3) & (black_board[y+2] >> 2) & (black_board[y+1] >> 1) & (0x40000 >> x)))
-                    remove_stone_from_board(x-1,y+1,true), remove_stone_from_board(x-2,y+2,true), *captures |= 0x20, ++white_captures_count;
-                if (x-3 >= 0 && ((white_board[y] >> 3) & (black_board[y] >> 2) & (black_board[y] >> 1) & (0x40000 >> x)))
-                    remove_stone_from_board(x-1,y,true), remove_stone_from_board(x-2,y,true), *captures |= 0x40, ++white_captures_count;
-                if (y-3 >= 0 && x-3 >= 0 && ((white_board[y-3] >> 3) & (black_board[y-2] >> 2) & (black_board[y-1] >> 1) & (0x40000 >> x)))
-                    remove_stone_from_board(x-1,y-1,true), remove_stone_from_board(x-2,y-2,true), *captures |= 0x80, ++white_captures_count;
-            }
-        }
-        for (int16_t y2 = y-1; y2 <= y+1; ++y2)
-            for (int16_t x2 = x-1; x2 <= x+1; ++x2)
-                if (x2 >= 0 && x2 < BOARD_SIZE && y2 >= 0 && y2 < BOARD_SIZE)
-                    ++move_map[y2 * BOARD_SIZE + x2];
-        return (true);
     }
-    return (false);
+    else
+    {
+        if (y+1 < BOARD_SIZE && y-2 >= 0
+                && (black_board[y-2] & white_board[y-1] & black_board[y+1] & (0x40000 >> x)))
+            return (false);
+        if (y+1 < BOARD_SIZE && y-2 >= 0 && x+2 < BOARD_SIZE && x-1 >= 0
+                && ((black_board [y-2] << 2) & (white_board[y-1] << 1) & (black_board [y+1] >> 1) & (0x40000 >> x)))
+            return (false);
+        if (x+2 < BOARD_SIZE && x-1 >= 0
+                && ((black_board[y] << 2) & (white_board[y] << 1) & (black_board[y] >> 1) & (0x40000 >> x)))
+            return (false);
+        if (y+2 < BOARD_SIZE && y-1 >= 0 && x+2 > BOARD_SIZE && x-1 >= 0
+                && ((black_board[y+2] << 2) & (white_board[y+1] << 1) & (black_board[y-1] >> 1) & (0x40000 >> x)))
+            return (false);
+        if (y+2 < BOARD_SIZE && y-1 >= 0
+                && (black_board[y+2] & white_board[y+1] & black_board[y-1] & (0x40000 >> x)))
+            return (false);
+        if (y+2 < BOARD_SIZE && y-1 >= 0 && x+1 < BOARD_SIZE && x-2 >= 0
+                && ((black_board[y+2] >> 2) & (white_board[y+1] >> 1) & (black_board[y-1] << 1) & (0x40000 >> x)))
+            return (false);
+        if (x+1 < BOARD_SIZE && x-2 >= 0
+                && ((black_board[y] >> 2) & (white_board[y] >> 1) & (black_board[y] << 1) & (0x40000 >> x)))
+            return (false);
+        if (y+1 < BOARD_SIZE && y-2 >= 0 && x+1 < BOARD_SIZE && x-2 >= 0
+                && ((black_board[y-2] >> 2) & (white_board[y-1] >> 1) & (black_board[y+1] << 1) & (0x40000 >> x)))
+            return (false);
+        white_board[y] |= 0x40000 >> x;
+        hash ^= zobrist_table[(2 + y) * BOARD_SIZE + x];
+        if (captures)
+        {
+            if (y-3 >= 0 && (white_board[y-3] & black_board[y-2] & black_board[y-1] & (0x40000 >> x)))
+                remove_stone_from_board(x,y-1,true), remove_stone_from_board(x,y-2,true), *captures |= 0x1, ++white_captures_count;
+            if (y-3 >= 0 && x+3 < BOARD_SIZE && ((white_board[y-3] << 3) & (black_board[y-2] << 2) & (black_board[y-1] << 1) & (0x40000 >> x)))
+                remove_stone_from_board(x+1,y-1,true), remove_stone_from_board(x+2,y-2,true), *captures |= 0x2, ++white_captures_count;
+            if (x+3 < BOARD_SIZE && ((white_board[y] << 3) & (black_board[y] << 2) & (black_board[y] << 1) & (0x40000 >> x)))
+                remove_stone_from_board(x+1,y,true), remove_stone_from_board(x+2,y,true), *captures |= 0x4, ++white_captures_count;
+            if (y+3 < BOARD_SIZE && x+3 < BOARD_SIZE && ((white_board[y+3] << 3) & (black_board[y+2] << 2) & (black_board[y+1] << 1) & (0x40000 >> x)))
+                remove_stone_from_board(x+1,y+1,true), remove_stone_from_board(x+2,y+2,true), *captures |= 0x8, ++white_captures_count;
+            if (y+3 < BOARD_SIZE && (white_board[y+3] & black_board[y+2] & black_board[y+1] & (0x40000 >> x)))
+                remove_stone_from_board(x,y+1,true), remove_stone_from_board(x,y+2,true), *captures |= 0x10, ++white_captures_count;
+            if (y+3 < BOARD_SIZE && x-3 >= 0 && ((white_board[y+3] >> 3) & (black_board[y+2] >> 2) & (black_board[y+1] >> 1) & (0x40000 >> x)))
+                remove_stone_from_board(x-1,y+1,true), remove_stone_from_board(x-2,y+2,true), *captures |= 0x20, ++white_captures_count;
+            if (x-3 >= 0 && ((white_board[y] >> 3) & (black_board[y] >> 2) & (black_board[y] >> 1) & (0x40000 >> x)))
+                remove_stone_from_board(x-1,y,true), remove_stone_from_board(x-2,y,true), *captures |= 0x40, ++white_captures_count;
+            if (y-3 >= 0 && x-3 >= 0 && ((white_board[y-3] >> 3) & (black_board[y-2] >> 2) & (black_board[y-1] >> 1) & (0x40000 >> x)))
+                remove_stone_from_board(x-1,y-1,true), remove_stone_from_board(x-2,y-2,true), *captures |= 0x80, ++white_captures_count;
+        }
+    }
+    if (y-1 >= 0)
+        ++move_map[(y-1) * BOARD_SIZE + x];
+    if (y-1 >= 0 && x+1 < BOARD_SIZE)
+        ++move_map[(y-1) * BOARD_SIZE + (x+1)];
+    if (x+1 < BOARD_SIZE)
+        ++move_map[y * BOARD_SIZE + (x+1)];
+    if (y+1 < BOARD_SIZE && x+1 < BOARD_SIZE)
+        ++move_map[(y+1) * BOARD_SIZE + (x+1)];
+    if (y+1 < BOARD_SIZE)
+        ++move_map[(y+1) * BOARD_SIZE + x];
+    if (y+1 < BOARD_SIZE && x-1 >= 0)
+        ++move_map[(y+1) * BOARD_SIZE + (x-1)];
+    if (x-1 >= 0)
+        ++move_map[y * BOARD_SIZE + (x-1)];
+    if (y-1 >= 0 && x-1 >= 0)
+        ++move_map[(y-1) * BOARD_SIZE + (x-1)];
+    return (true);
 }
-
 
 bool Board::remove_stone_from_board(int8_t x, int8_t y, bool is_black, uint8_t *captures)
 {
-    if (x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE)
+    if (is_black)
     {
-        if (is_black)
+        black_board[y] &= ~(0x40000 >> x);
+        hash ^= zobrist_table[y * BOARD_SIZE + x];
+        if (captures)
         {
-            black_board[y] &= ~(0x40000 >> x);
-            hash ^= zobrist_table[y * BOARD_SIZE + x];
-            if (captures)
-            {
-                if (*captures & 0x1)
-                    place_stone_on_board(x,y-1,!is_black), place_stone_on_board(x,y-2,!is_black), --black_captures_count;
-                if (*captures & 0x2)
-                    place_stone_on_board(x+1,y-1,!is_black), place_stone_on_board(x+2,y-2,!is_black), --black_captures_count;
-                if (*captures & 0x4)
-                    place_stone_on_board(x+1,y,!is_black), place_stone_on_board(x+2,y,!is_black), --black_captures_count;
-                if (*captures & 0x8)
-                    place_stone_on_board(x+1,y+1,!is_black), place_stone_on_board(x+2,y+2,!is_black), --black_captures_count;
-                if (*captures & 0x10)
-                    place_stone_on_board(x,y+1,!is_black), place_stone_on_board(x,y+2,!is_black), --black_captures_count;
-                if (*captures & 0x20)
-                    place_stone_on_board(x-1,y+1,!is_black), place_stone_on_board(x-2,y+2,!is_black), --black_captures_count;
-                if (*captures & 0x40)
-                    place_stone_on_board(x-1,y,!is_black), place_stone_on_board(x-2,y,!is_black), --black_captures_count;
-                if (*captures & 0x80)
-                    place_stone_on_board(x-1,y-1,!is_black), place_stone_on_board(x-2,y-2,!is_black), --black_captures_count;
-            }
+            if (*captures & 0x1)
+                place_stone_on_board(x,y-1,!is_black), place_stone_on_board(x,y-2,!is_black), --black_captures_count;
+            if (*captures & 0x2)
+                place_stone_on_board(x+1,y-1,!is_black), place_stone_on_board(x+2,y-2,!is_black), --black_captures_count;
+            if (*captures & 0x4)
+                place_stone_on_board(x+1,y,!is_black), place_stone_on_board(x+2,y,!is_black), --black_captures_count;
+            if (*captures & 0x8)
+                place_stone_on_board(x+1,y+1,!is_black), place_stone_on_board(x+2,y+2,!is_black), --black_captures_count;
+            if (*captures & 0x10)
+                place_stone_on_board(x,y+1,!is_black), place_stone_on_board(x,y+2,!is_black), --black_captures_count;
+            if (*captures & 0x20)
+                place_stone_on_board(x-1,y+1,!is_black), place_stone_on_board(x-2,y+2,!is_black), --black_captures_count;
+            if (*captures & 0x40)
+                place_stone_on_board(x-1,y,!is_black), place_stone_on_board(x-2,y,!is_black), --black_captures_count;
+            if (*captures & 0x80)
+                place_stone_on_board(x-1,y-1,!is_black), place_stone_on_board(x-2,y-2,!is_black), --black_captures_count;
         }
-        else
-        {
-            white_board[y] &= ~(0x40000 >> x);
-            hash ^= zobrist_table[(2 + y) * BOARD_SIZE + x];
-            if (captures)
-            {
-                if (*captures & 0x1)
-                    place_stone_on_board(x,y-1,!is_black), place_stone_on_board(x,y-2,!is_black), --white_captures_count;
-                if (*captures & 0x2)
-                    place_stone_on_board(x+1,y-1,!is_black), place_stone_on_board(x+2,y-2,!is_black), --white_captures_count;
-                if (*captures & 0x4)
-                    place_stone_on_board(x+1,y,!is_black), place_stone_on_board(x+2,y,!is_black), --white_captures_count;
-                if (*captures & 0x8)
-                    place_stone_on_board(x+1,y+1,!is_black), place_stone_on_board(x+2,y+2,!is_black), --white_captures_count;
-                if (*captures & 0x10)
-                    place_stone_on_board(x,y+1,!is_black), place_stone_on_board(x,y+2,!is_black), --white_captures_count;
-                if (*captures & 0x20)
-                    place_stone_on_board(x-1,y+1,!is_black), place_stone_on_board(x-2,y+2,!is_black), --white_captures_count;
-                if (*captures & 0x40)
-                    place_stone_on_board(x-1,y,!is_black), place_stone_on_board(x-2,y,!is_black), --white_captures_count;
-                if (*captures & 0x80)
-                    place_stone_on_board(x-1,y-1,!is_black), place_stone_on_board(x-2,y-2,!is_black), --white_captures_count;
-            }
-        }
-        for (int16_t y2 = y-1; y2 <= y+1; ++y2)
-            for (int16_t x2 = x-1; x2 <= x+1; ++x2)
-                if (x2 >= 0 && x2 < BOARD_SIZE && y2 >= 0 && y2 < BOARD_SIZE)
-                    --move_map[y2 * BOARD_SIZE + x2];
-        
-        return (true);
     }
-    return (false);
+    else
+    {
+        white_board[y] &= ~(0x40000 >> x);
+        hash ^= zobrist_table[(2 + y) * BOARD_SIZE + x];
+        if (captures)
+        {
+            if (*captures & 0x1)
+                place_stone_on_board(x,y-1,!is_black), place_stone_on_board(x,y-2,!is_black), --white_captures_count;
+            if (*captures & 0x2)
+                place_stone_on_board(x+1,y-1,!is_black), place_stone_on_board(x+2,y-2,!is_black), --white_captures_count;
+            if (*captures & 0x4)
+                place_stone_on_board(x+1,y,!is_black), place_stone_on_board(x+2,y,!is_black), --white_captures_count;
+            if (*captures & 0x8)
+                place_stone_on_board(x+1,y+1,!is_black), place_stone_on_board(x+2,y+2,!is_black), --white_captures_count;
+            if (*captures & 0x10)
+                place_stone_on_board(x,y+1,!is_black), place_stone_on_board(x,y+2,!is_black), --white_captures_count;
+            if (*captures & 0x20)
+                place_stone_on_board(x-1,y+1,!is_black), place_stone_on_board(x-2,y+2,!is_black), --white_captures_count;
+            if (*captures & 0x40)
+                place_stone_on_board(x-1,y,!is_black), place_stone_on_board(x-2,y,!is_black), --white_captures_count;
+            if (*captures & 0x80)
+                place_stone_on_board(x-1,y-1,!is_black), place_stone_on_board(x-2,y-2,!is_black), --white_captures_count;
+        }
+    }
+    if (y-1 >= 0)
+        --move_map[(y-1) * BOARD_SIZE + x];
+    if (y-1 >= 0 && x+1 < BOARD_SIZE)
+        --move_map[(y-1) * BOARD_SIZE + (x+1)];
+    if (x+1 < BOARD_SIZE)
+        --move_map[y * BOARD_SIZE + (x+1)];
+    if (y+1 < BOARD_SIZE && x+1 < BOARD_SIZE)
+        --move_map[(y+1) * BOARD_SIZE + (x+1)];
+    if (y+1 < BOARD_SIZE)
+        --move_map[(y+1) * BOARD_SIZE + x];
+    if (y+1 < BOARD_SIZE && x-1 >= 0)
+        --move_map[(y+1) * BOARD_SIZE + (x-1)];
+    if (x-1 >= 0)
+        --move_map[y * BOARD_SIZE + (x-1)];
+    if (y-1 >= 0 && x-1 >= 0)
+        --move_map[(y-1) * BOARD_SIZE + (x-1)];
+    return (true);
 }
 
 int32_t Board::minimax(int8_t depth, int32_t alpha, int32_t beta, int8_t x, int8_t y, bool maximizer, bool is_black)
 {
-    ++nodes_count;
-
-    if (depth == 0)
+    if ((depth == 0 && ++nodes_count) || five_in_a_row(x, y, is_black))
     {
-        int32_t black_score{0};
-        int32_t white_score{0};
+        int32_t score{0}, black_score{0}, white_score{0};
 
         if (hash_map.find(hash) != hash_map.end() && ++cache_hit_count)
             score = hash_map[hash];

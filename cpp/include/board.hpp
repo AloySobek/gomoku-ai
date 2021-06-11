@@ -169,6 +169,7 @@ public:
         DRAW
     };
     using Line = char[BS+1];
+    std::chrono::time_point<std::chrono::high_resolution_clock> startTime;
 private:
     Color getToken(int x, int y) const {
         switch (rows[y][x]) {

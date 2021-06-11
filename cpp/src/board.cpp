@@ -141,7 +141,8 @@ int32_t Board::minimax(int8_t depth, int32_t alpha, int32_t beta, int8_t x, int8
 {
     ++nodes_count;
 
-    if (depth == 0)
+    std::chrono::duration<double> elapsed = std::chrono::high_resolution_clock::now()- startTime;
+    if (depth == 0 || elapsed.count() > 0.48)
     {
         move = is_black ? BLACK : WHITE;
         result = _; // TODO;
@@ -169,7 +170,7 @@ int32_t Board::minimax(int8_t depth, int32_t alpha, int32_t beta, int8_t x, int8
                         max_h = std::max(max_h, minimax(depth-1, alpha, beta,x,y, false, !is_black));
                         remove_stone_from_board(x, y, is_black, &captures);
                         alpha = std::max(alpha, max_h);
-                        if (beta >= alpha && ++pruned_count)
+                        if (beta <= alpha && ++pruned_count)
                             return (max_h);
                     }
         return (max_h);
@@ -199,6 +200,7 @@ int32_t Board::ai_move(bool is_black)
     int32_t max_h{std::numeric_limits<int32_t>::min()};
     int32_t move{0};
     int32_t h{0};
+    startTime = std::chrono::high_resolution_clock::now();
 
     cache_hit_count = 0;
     pruned_count = 0;

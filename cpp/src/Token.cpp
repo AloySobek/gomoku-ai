@@ -7,6 +7,8 @@
 #include "Token.hpp"
 
 void Token::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
+    (void)option;
+    (void)widget;
     painter->save();
     auto sx = 0;
     auto sy = 0;
@@ -74,10 +76,10 @@ void Token::hoverLeaveEvent(QGraphicsSceneHoverEvent *event) {
 
 Token::Token(int x, int y)
     : QGraphicsItem()
-    , hovered(false)
     , def(Scene::EMPTY, QColor(Qt::transparent), QString())
     , x(x)
     , y(y)
+    , hovered(false)
 {
     this->setAcceptHoverEvents(true);
 }

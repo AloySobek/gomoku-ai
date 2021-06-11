@@ -140,9 +140,10 @@ bool Board::remove_stone_from_board(int8_t x, int8_t y, bool is_black, uint8_t *
 int32_t Board::minimax(int8_t depth, int32_t alpha, int32_t beta, int8_t x, int8_t y, bool maximizer, bool is_black)
 {
     ++nodes_count;
-
+    (void)x;
+    (void)y;
     std::chrono::duration<double> elapsed = std::chrono::high_resolution_clock::now()- startTime;
-    if (depth == 0 || elapsed.count() > 0.48)
+    if (depth == 0 || elapsed.count() > 0.49)
     {
         move = is_black ? BLACK : WHITE;
         result = _; // TODO;
@@ -752,6 +753,9 @@ bool Board::open_two(int8_t x, int8_t y, bool is_black)
 
 bool Board::simple_two(int8_t x, int8_t y, bool is_black)
 {
+    (void)x;
+    (void)y;
+    (void)is_black;
     return (false);
 }
 

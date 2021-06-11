@@ -8,9 +8,9 @@
 
 MainWindow::MainWindow(Game *game, QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
-    , game(game)
     , scene(new Scene(game, this))
+    , game(game)
+    , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     connect(ui->actionExit, SIGNAL(triggered(bool)), this, SLOT(onActionExit()));

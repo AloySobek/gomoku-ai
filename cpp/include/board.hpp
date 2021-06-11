@@ -41,8 +41,9 @@ public:
     bool open_four(int8_t x, int8_t y, bool is_black);
     bool simple_four(int8_t x, int8_t y, bool is_black);
     bool open_three(int8_t x, int8_t y, bool is_black);
-    bool broken_three(int8_t x, int8_t y, bool is_black);
-    bool not_threat(int8_t x, int8_t y, bool is_black);
+    bool simple_three(int8_t x, int8_t y, bool is_black);
+    bool open_two(int8_t x, int8_t y, bool is_black);
+    bool simple_two(int8_t x, int8_t y, bool is_black);
 
     std::unordered_map<uint64_t, int32_t> hash_map;
 private:

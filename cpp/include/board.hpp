@@ -25,6 +25,9 @@ public:
     uint64_t pruned_count{0};
     uint64_t cache_hit_count{0};
 
+    uint64_t black_captures_count{0};
+    uint64_t white_captures_count{0};
+
     int32_t *move_map{new int32_t[BOARD_SIZE * BOARD_SIZE]()};
     int32_t *black_board{new int32_t[BOARD_SIZE]()};
     int32_t *white_board{new int32_t[BOARD_SIZE]()};

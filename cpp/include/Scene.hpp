@@ -65,7 +65,7 @@ public:
     void setToken(int x, int y, TokenDef td);
     Token* getToken(int x, int y);
 private:
-    Token* tokens[GSIZE][GSIZE]{nullptr};
+    Token* tokens[GSIZE][GSIZE]{{nullptr}};
     QPixmap bg;
     QPoint viewPosToBoard(QPoint pt);
     QPoint boardPosToView(QPoint pt);

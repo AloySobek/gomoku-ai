@@ -13,12 +13,12 @@ void Scene::drawBackground(QPainter *painter, const QRectF &rect) {
 
 Scene::Scene(Game *game, QObject *parent)
     : QGraphicsScene(parent)
-    , bg(QPixmap(QString().fromStdString("images/board.jpg")))
-    , imBlackPeace(QPixmap(QString().fromStdString("images/blackPiece.png")))
-    , imWhitePeace(QPixmap(QString().fromStdString("images/whitePiece.png")))
-    , imPanel(QPixmap(QString().fromStdString("images/panel.jpg")))
-    , game(game)
     , lastPredictedMove(false)
+    , game(game)
+    , imWhitePeace(QPixmap(QString().fromStdString("images/whitePiece.png")))
+    , imBlackPeace(QPixmap(QString().fromStdString("images/blackPiece.png")))
+    , imPanel(QPixmap(QString().fromStdString("images/panel.jpg")))
+    , bg(QPixmap(QString().fromStdString("images/board.jpg")))
     {
     for (int y = 0; y < GSIZE; ++y) {
         for (int x = 0; x < GSIZE; ++x) {

@@ -52,7 +52,8 @@ set(PROJECT_SOURCES
         include/board.hpp
         src/Patterns.cpp
         include/Patterns.hpp
-        )
+        include/Board2_0.h
+  )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
   qt_add_executable(${PROJECT_NAME}

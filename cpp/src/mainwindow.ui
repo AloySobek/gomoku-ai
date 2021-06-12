@@ -83,6 +83,7 @@ background-color: rgba(255, 255, 255, 0);</string>
     <property name="title">
      <string>Game</string>
     </property>
+    <addaction name="actionHelpWithMove"/>
     <addaction name="actionRestart"/>
     <addaction name="actionDevMode"/>
     <addaction name="actionExit"/>
@@ -214,6 +215,14 @@ background-color: rgba(255, 255, 255, 0);</string>
    </property>
    <property name="shortcut">
     <string>F8</string>
+   </property>
+  </action>
+  <action name="actionHelpWithMove">
+   <property name="text">
+    <string>Help With Move</string>
+   </property>
+   <property name="shortcut">
+    <string>Space</string>
    </property>
   </action>
  </widget>

@@ -50,6 +50,7 @@ public slots:
     void onActionShowCapture();
     void onActionShowUnderCapture();
     void onActionShowTowFreeThree();
+    void onActionHelpWithMove();
     void reset();
     void quit();
 };

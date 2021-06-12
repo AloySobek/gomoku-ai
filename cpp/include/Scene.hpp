@@ -65,18 +65,20 @@ public:
     void setBoard(TokenDef tks[GSIZE * GSIZE]);
     void setToken(int x, int y, TokenDef td);
     Token* getToken(int x, int y);
-    void onGameFinished();
+    void onGameFinished(Board::Result result);
 private:
     Token* tokens[GSIZE][GSIZE]{{nullptr}};
     QPixmap bg;
     QPoint viewPosToBoard(QPoint pt);
     QPoint boardPosToView(QPoint pt);
     void onTokenClicked(Token *token, QGraphicsSceneMouseEvent *event);
+    bool check();
 protected:
     void drawBackground(QPainter *painter, const QRectF &rect) override;
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
 public slots:
     void reset();
+    void onHelpMove();
 signals:
     void resetted();
     void finished();

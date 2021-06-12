@@ -140,25 +140,34 @@ void Scene::onTokenClicked(Token *token, QGraphicsSceneMouseEvent *event) {
     } else if (pvpMode && game->result() == Board::NO_RESULT) {
         if (!game->getToken(token->x, token->y))
         {
+            TokenColor color;
             if (lastPredictedMove.v == BLACK)
-                token->def.color = WHITE;
+                color = WHITE;
             else
-                token->def.color = BLACK;
-            game->setToken(token->x, token->y, token->def.color);
-            token->update();
-            Move move{true, static_cast<int8_t>(token->x), static_cast<int8_t>(token->y), static_cast<int8_t>(token->def.color), 0};
-            if (lastPredictedMove.valid)
-                getToken(lastPredictedMove.x, lastPredictedMove.y)->def.highlight = Qt::transparent;
-            lastPredictedMove = move;
-            reset();
-            getToken(lastPredictedMove.x, lastPredictedMove.y)->def.highlight = Qt::darkRed;
+                color = BLACK;
+            if (game->setToken(token->x, token->y, color)) {
+                token->def.color = color;
+                token->update();
+                Move move{true, static_cast<int8_t>(token->x), static_cast<int8_t>(token->y),
+                          static_cast<int8_t>(token->def.color), 0};
+                if (lastPredictedMove.valid)
+                    getToken(lastPredictedMove.x, lastPredictedMove.y)->def.highlight = Qt::transparent;
+                lastPredictedMove = move;
+                reset();
+                getToken(lastPredictedMove.x, lastPredictedMove.y)->def.highlight = Qt::darkRed;
+                check();
+            }
         }
     } else if (game->result() == Board::NO_RESULT) {
         if (!game->getToken(token->x, token->y))
         {
+
+            if (!game->setToken(token->x, token->y, playAs))
+                return;
             token->def.color = playAs;
-            game->setToken(token->x, token->y, token->def.color);
             token->update();
+            if (check())
+                return;
             auto move  = game->predictMove(playAs == BLACK ? WHITE : BLACK);
             if (move.valid) {
                 if (lastPredictedMove.valid)
@@ -167,6 +176,7 @@ void Scene::onTokenClicked(Token *token, QGraphicsSceneMouseEvent *event) {
                 game->setToken(move.x, move.y, move.v);
                 reset();
                 getToken(lastPredictedMove.x, lastPredictedMove.y)->def.highlight = Qt::darkRed;
+                check();
             }
         }
     }
@@ -177,9 +187,22 @@ void Scene::reset() {
         return;
     for (int y = 0; y < GSIZE; ++y) {
         for (int x = 0; x < GSIZE; ++x) {
+            auto second = game->board.getToken(x, y);
+            QColor secondColor;
+            switch (second) {
+                case Board::BLACK:
+                    secondColor = Qt::darkBlue;
+                    break;
+                case Board::WHITE:
+                    secondColor = Qt::darkRed;
+                    break;
+                default:
+                    secondColor = Qt::transparent;
+                    break;
+            }
             getToken(x, y)->setDef({
               Scene::tokenColorFromInt(game->getToken(x, y)),
-              QColor(Qt::transparent),
+              QColor(!showMask ? Qt::transparent : secondColor),
               showMask && game->board.move_map[GSIZE * y + x] ? QString::number(game->board.move_map[GSIZE * y + x]) : QString()
             });
         }
@@ -196,9 +219,9 @@ void Scene::startGame() {
     }
 }
 
-void Scene::onGameFinished() {
+void Scene::onGameFinished(Board::Result result) {
     WinDialog dlg;
-    switch (game->result()) {
+    switch (result) {
         case Board::WHITE_WIN:
             dlg.asWhiteWin();
             break;
@@ -214,4 +237,38 @@ void Scene::onGameFinished() {
     dlg.exec();
     qDebug() << "Game finished, exiting";
     emit finished();
+}
+
+bool Scene::check() {
+    bool b5 = game->board.PtrMatch(bFive);
+    auto c5b = game->board.black_captures_count >= 5;
+
+    bool w5 = game->board.PtrMatch(wFive);
+    auto c5w = game->board.white_captures_count >= 5;
+    if (b5 || c5b)
+    {
+        onGameFinished(Board::BLACK_WIN);
+        game->board.result = Board::BLACK_WIN;
+        return true;
+    }
+    if (w5 || c5w)
+    {
+        onGameFinished(Board::WHITE_WIN);
+        game->board.result = Board::WHITE_WIN;
+        return true;
+    }
+    return false;
+}
+
+void Scene::onHelpMove() {
+    qDebug() << "onHelpMove";
+    if (!pvpMode)
+        return;
+    auto move  = game->predictMove(lastPredictedMove.v == BLACK ? WHITE : BLACK);
+    qDebug() << move.x << ":" << move.y;
+    if (!move.valid)
+        return;
+    getToken(move.x, move.y)->def.highlight = lastPredictedMove.v == BLACK ? Qt::white : Qt::black;
+    getToken(move.x, move.y)->update();
+    update();
 }

@@ -29,6 +29,7 @@ MainWindow::MainWindow(Game *game, QWidget *parent)
     connect(ui->actionShowCapture, SIGNAL(triggered(bool)), this, SLOT(onActionShowCapture()));
     connect(ui->actionShowUnderCapture, SIGNAL(triggered(bool)), this, SLOT(onActionShowUnderCapture()));
     connect(ui->actionShowTowFreeThree, SIGNAL(triggered(bool)), this, SLOT(onActionShowTowFreeThree()));
+    connect(ui->actionHelpWithMove, SIGNAL(triggered(bool)), this, SLOT(onActionHelpWithMove()));
 
 
     connect(scene, SIGNAL(resetted()), this, SLOT(reset()));
@@ -410,4 +411,8 @@ void MainWindow::onActionShowTowFreeThree() {
 void MainWindow::quit() {
     qDebug() << "quit" << this;
     exit(0);
+}
+
+void MainWindow::onActionHelpWithMove() {
+    scene->onHelpMove();
 }

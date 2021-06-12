@@ -11,7 +11,6 @@ Board::Board()
 
 bool Board::place_stone_on_board(int8_t x, int8_t y, bool is_black, uint8_t *captures)
 {
-    setToken(x, y, is_black ? BLACK : WHITE);
     int32_t open_three_count{0};
     bool v{false}, h{false}, dl{false}, dr{false};
     if (is_black)

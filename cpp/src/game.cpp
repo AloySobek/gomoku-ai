@@ -13,7 +13,7 @@ int8_t Game::getToken(int8_t x, int8_t y)
 
 bool Game::setToken(int8_t x, int8_t y, int8_t v)
 {
-    uint8_t stub;
+    int32_t stub;
 
     if (v == BLACK_STONE)
         return(board.place_stone_on_board(x,y,true,&stub));

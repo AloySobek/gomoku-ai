@@ -25,6 +25,12 @@ typedef struct SPtr
     char 	str[8];
     int		len;
 } Ptr;
+
+constexpr static Ptr bB5_1{"12222", 5};
+constexpr static Ptr bB5_2{"22221", 5};
+constexpr static Ptr wB5_1{"21111", 5};
+constexpr static Ptr wB5_2{"11112", 5};
+
 constexpr static Ptr wFive{"22222", 5};
 constexpr static Ptr wFree4{"022220", 6};
 constexpr static Ptr wHalf4_1{"122220", 6};
@@ -144,7 +150,7 @@ private:
 
     int32_t start_x{0}, start_y{0};
     int32_t end_x{0}, end_y{0};
-    int32_t most_left, most_right{0};
+    int32_t most_left{0}, most_right{0};
 
     void fill_zobrist_table();
     uint64_t get_hash();
@@ -201,12 +207,22 @@ private:
     }
 
 public:
+    int8_t moveX = 0;
+    int8_t moveY = 0;
     int move = EMPTY;
     Result result = NO_RESULT;
     std::array<Line, BS> rows{};
     std::array<Line, BS> columns{};
     std::array<Line, BS+BS-1> down{};
     std::array<Line, BS+BS-1> up{};
+
+
+    int PtrLocalMatchAll(const Ptr &ptr, int x, int y) const {
+        return PtrLocalMatch(rows, ptr, x, y)
+               + PtrLocalMatch(columns, ptr, CL_MAP.at({x, y}))
+               + PtrLocalMatch(up, ptr, UP_MAP.at({x, y}))
+               + PtrLocalMatch(down, ptr, DW_MAP.at({x, y}));
+    }
 
     int PtrLocal5Match(Color color, int x, int y) const {
         return PtrLocalMatch(rows, color == BLACK ? bFive : wFive, x, y)

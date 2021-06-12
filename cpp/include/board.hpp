@@ -137,21 +137,25 @@ public:
     void reset();
     void print();
 
-    bool five_in_a_row(int8_t x, int8_t y, bool is_black);
-    bool open_four(int8_t x, int8_t y, bool is_black);
-    bool simple_four(int8_t x, int8_t y, bool is_black);
-    bool open_three(int8_t x, int8_t y, bool is_black);
-    bool simple_three(int8_t x, int8_t y, bool is_black);
-    bool open_two(int8_t x, int8_t y, bool is_black);
-    bool simple_two(int8_t x, int8_t y, bool is_black);
-
     std::unordered_map<uint64_t, int32_t> hash_map;
 private:
     uint64_t *zobrist_table{new uint64_t[BOARD_SIZE * BOARD_SIZE * 2]()};
     uint64_t hash{0};
 
+    int32_t start_x{0}, start_y{0};
+    int32_t end_x{0}, end_y{0};
+    int32_t most_left, most_right{0};
+
     void fill_zobrist_table();
     uint64_t get_hash();
+
+    bool five_in_a_row(int32_t x, int32_t y, bool is_black);
+    bool open_four(int32_t x, int32_t y, bool is_black);
+    bool simple_four(int32_t x, int32_t y, bool is_black);
+    bool open_three(int32_t x, int32_t y, bool is_black);
+    bool simple_three(int32_t x, int32_t y, bool is_black);
+    bool open_two(int32_t x, int32_t y, bool is_black);
+    bool simple_two(int32_t x, int32_t y, bool is_black);
 
 // Board v2
 public:

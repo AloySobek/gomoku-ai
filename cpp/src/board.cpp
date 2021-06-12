@@ -353,8 +353,6 @@ bool Board::remove_stone_from_board(int8_t x, int8_t y, bool is_black, uint8_t *
 int32_t Board::minimax(int8_t depth, int32_t alpha, int32_t beta, int8_t x, int8_t y, bool maximizer, bool is_black)
 {
     ++nodes_count;
-    (void)x;
-    (void)y;
     std::chrono::duration<double> elapsed = std::chrono::high_resolution_clock::now()- startTime;
     bool five = PtrLocal5Match(is_black ? BLACK : WHITE, x, y);
     bool winByCapture = is_black ? black_captures_count >= 5 : white_captures_count >= 5;
@@ -362,6 +360,8 @@ int32_t Board::minimax(int8_t depth, int32_t alpha, int32_t beta, int8_t x, int8
     {
         auto prevResult = result;
         move = is_black ? BLACK : WHITE;
+        moveX = x;
+        moveY = y;
         result = five ? (is_black ? BLACK_WIN : WHITE_WIN) : result;
         int32_t score;
         if (hash_map.find(hash) != hash_map.end() && ++cache_hit_count)
@@ -1441,9 +1441,9 @@ int Board::Eval() const {
         return +50;
     else if (PtrMatch(bFive))
         return -50;
-    else if (PtrMatch(wZebra) && move == WHITE)
+    else if (move == WHITE && PtrMatch(wZebra))
         return +30;
-    else if (PtrMatch(bZebra) && move == BLACK)
+    else if (move == BLACK && PtrMatch(bZebra))
         return -30;
     int evalScore{0};
 

@@ -11,7 +11,6 @@ Board::Board()
 
 bool Board::place_stone_on_board(int8_t x, int8_t y, bool is_black, uint8_t *captures)
 {
-    setToken(x, y, is_black ? BLACK : WHITE);
     if (is_black)
     {
         /* if (y-2 >= 0 && y+2 < BOARD_SIZE && x-2 >= 0 && x+2 < BOARD_SIZE) */
@@ -47,6 +46,7 @@ bool Board::place_stone_on_board(int8_t x, int8_t y, bool is_black, uint8_t *cap
         if (y+1 < BOARD_SIZE && y-2 >= 0 && x+1 < BOARD_SIZE && x-2 >= 0
                 && ((white_board[y-2] >> 2) & (black_board[y-1] >> 1) & (white_board[y+1] << 1) & (0x40000 >> x)))
             return (false);
+        setToken(x, y, is_black ? BLACK : WHITE);
         black_board[y] |= 0x40000 >> x;
         hash ^= zobrist_table[y * BOARD_SIZE + x];
         if (captures)
@@ -95,6 +95,7 @@ bool Board::place_stone_on_board(int8_t x, int8_t y, bool is_black, uint8_t *cap
         if (y+1 < BOARD_SIZE && y-2 >= 0 && x+1 < BOARD_SIZE && x-2 >= 0
                 && ((black_board[y-2] >> 2) & (white_board[y-1] >> 1) & (black_board[y+1] << 1) & (0x40000 >> x)))
             return (false);
+        setToken(x, y, is_black ? BLACK : WHITE);
         white_board[y] |= 0x40000 >> x;
         hash ^= zobrist_table[(2 + y) * BOARD_SIZE + x];
         if (captures)

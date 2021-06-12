@@ -143,10 +143,13 @@ int32_t Board::minimax(int8_t depth, int32_t alpha, int32_t beta, int8_t x, int8
     (void)x;
     (void)y;
     std::chrono::duration<double> elapsed = std::chrono::high_resolution_clock::now()- startTime;
-    if (depth == 0 || elapsed.count() > 0.49)
+    bool five = PtrLocal5Match(is_black ? BLACK : WHITE, x, y);
+    bool winByCapture = is_black ? black_captures_count >= 5 : white_captures_count >= 5;
+    if (depth == 0 || elapsed.count() > 0.49 || five || winByCapture)
     {
+        auto prevResult = result;
         move = is_black ? BLACK : WHITE;
-        result = _; // TODO;
+        result = five ? (is_black ? BLACK_WIN : WHITE_WIN) : result;
         int32_t score;
         if (hash_map.find(hash) != hash_map.end() && ++cache_hit_count)
             score = hash_map[hash];
@@ -156,6 +159,7 @@ int32_t Board::minimax(int8_t depth, int32_t alpha, int32_t beta, int8_t x, int8
             score = -Eval(); // WHITE BLACK SWAPPED
             hash_map[hash] = score;
         }
+        result = prevResult;
         return (score);
     }
     if (maximizer)
@@ -168,8 +172,17 @@ int32_t Board::minimax(int8_t depth, int32_t alpha, int32_t beta, int8_t x, int8
                     {
                         uint8_t captures{0};
                         place_stone_on_board(x, y, is_black, &captures);
+
+                        auto prevResult = result;
+                        auto prevLastMoveIsCapture = lastMoveIsCapture;
+                        lastMoveIsCapture = (bool)captures;
+
                         max_h = std::max(max_h, minimax(depth-1, alpha, beta,x,y, false, !is_black));
                         remove_stone_from_board(x, y, is_black, &captures);
+
+                        result = prevResult;
+                        lastMoveIsCapture = prevLastMoveIsCapture;
+
                         alpha = std::max(alpha, max_h);
                         if (beta <= alpha && ++pruned_count)
                             return (max_h);
@@ -186,8 +199,17 @@ int32_t Board::minimax(int8_t depth, int32_t alpha, int32_t beta, int8_t x, int8
                     {
                         uint8_t captures{0};
                         place_stone_on_board(x, y, is_black, &captures);
+
+                        auto prevResult = result;
+                        auto prevLastMoveIsCapture = lastMoveIsCapture;
+                        lastMoveIsCapture = (bool)captures;
+
                         min_h = std::min(min_h, minimax(depth-1, alpha, beta, true,x,y, !is_black));
                         remove_stone_from_board(x, y, is_black, &captures);
+
+                        result = prevResult;
+                        lastMoveIsCapture = prevLastMoveIsCapture;
+
                         beta = std::min(beta, min_h);
                         if (beta <= alpha && ++pruned_count)
                             return (min_h);
@@ -246,6 +268,10 @@ void Board::reset()
     }
     setToken(BOARD_SIZE / 2, BOARD_SIZE / 2, BLACK);
     move_map[BOARD_SIZE / 2 * BOARD_SIZE + BOARD_SIZE / 2] = 1;
+    result = NO_RESULT;
+    black_captures_count = 0;
+    white_captures_count = 0;
+    lastMoveIsCapture = false;
 }
 
 void Board::print()
@@ -258,6 +284,37 @@ void Board::print()
         for (uint16_t x{0}; x < BOARD_SIZE; ++x)
             std::cout << move_map[y * BOARD_SIZE + x];
         std::cout << "\n";
+    }
+    std::cout << "\nrows\n";
+    for (int col = 0; col < BS; ++col) {
+        for (int row = 0; row < BS; ++row) {
+            std::cout << rows[row][col];
+        }
+        std::cout << std::endl;
+    }
+    std::cout << "\ncolumns\n";
+    for (int col = 0; col < BS; ++col) {
+        for (int row = 0; row < BS; ++row) {
+            auto pt = CL_MAP.at({row, col});
+            std::cout << columns[pt.first][pt.second];
+        }
+        std::cout << std::endl;
+    }
+    std::cout << "\nup\n";
+    for (int col = 0; col < BS; ++col) {
+        for (int row = 0; row < BS; ++row) {
+            auto pt = UP_MAP.at({row, col});
+            std::cout << up[pt.first][pt.second];
+        }
+        std::cout << std::endl;
+    }
+    std::cout << "\ndown\n";
+    for (int col = 0; col < BS; ++col) {
+        for (int row = 0; row < BS; ++row) {
+            auto pt = DW_MAP.at({row, col});
+            std::cout << down[pt.first][pt.second];
+        }
+        std::cout << std::endl;
     }
 }
 
@@ -987,7 +1044,11 @@ int Board::Eval() const {
         default:
             break;
     }
-    if (PtrMatch(wFive))
+    if (move == WHITE && white_captures_count >= 5)
+        return +100;
+    else if (move == BLACK && black_captures_count >= 5)
+        return -100;
+    else if (PtrMatch(wFive))
         return +50;
     else if (PtrMatch(bFive))
         return -50;
@@ -1030,6 +1091,6 @@ int Board::Eval() const {
 
     // Future captures for available moves // TODO cW - cB * 4
 
-    evalScore += ((int)white_captures_count - (int)black_captures_count) * 7;
+    evalScore += ((int)white_captures_count - (int)black_captures_count) * 14;
     return (evalScore);
 }

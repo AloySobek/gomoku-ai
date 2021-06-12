@@ -37,6 +37,8 @@ set(PROJECT_SOURCES
         src/main.cpp
         src/mainwindow.cpp
         src/mainwindow.ui
+        src/windialog.cpp
+        src/windialog.ui
         src/Startup.cpp
         include/Startup.hpp
         src/Startup.ui
@@ -45,6 +47,7 @@ set(PROJECT_SOURCES
         include/Token.hpp
         include/Scene.hpp
         include/mainwindow.hpp
+        include/windialog.hpp
 
         src/board.cpp
         src/game.cpp
@@ -52,7 +55,6 @@ set(PROJECT_SOURCES
         include/board.hpp
         src/Patterns.cpp
         include/Patterns.hpp
-        include/Board2_0.h
   )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

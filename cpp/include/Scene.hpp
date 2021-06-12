@@ -18,6 +18,7 @@
 #include <utility>
 
 #include "game.hpp"
+#include "windialog.hpp"
 
 class Token;
 
@@ -64,6 +65,7 @@ public:
     void setBoard(TokenDef tks[GSIZE * GSIZE]);
     void setToken(int x, int y, TokenDef td);
     Token* getToken(int x, int y);
+    void onGameFinished();
 private:
     Token* tokens[GSIZE][GSIZE]{{nullptr}};
     QPixmap bg;
@@ -77,5 +79,6 @@ public slots:
     void reset();
 signals:
     void resetted();
+    void finished();
 };
 #endif //SCENE_H

@@ -163,16 +163,18 @@ public:
     };
     enum Result
     {
-        _ = 0,
+        NO_RESULT = 0,
         WHITE_WIN,
         BLACK_WIN,
         DRAW
     };
+    bool lastMoveIsCapture = false;
     using Line = char[BS+1];
     std::chrono::time_point<std::chrono::high_resolution_clock> startTime;
-private:
+
     Color getToken(int x, int y) const {
-        switch (rows[y][x]) {
+        auto cxy = CL_MAP.at({x, y});
+        switch (columns[cxy.first][cxy.second]) {
             case '0':
                 return Color::EMPTY;
             case '1':
@@ -183,6 +185,7 @@ private:
                 throw std::runtime_error("Trash on board!");
         }
     }
+private:
     void setToken(int x, int y, const Color color) {
         const auto &cxy = CL_MAP.at({x, y});
         const auto &uxy = UP_MAP.at({x, y});
@@ -195,24 +198,37 @@ private:
 
 public:
     int move = EMPTY;
-    Result result = DRAW;
+    Result result = NO_RESULT;
     std::array<Line, BS> rows{};
     std::array<Line, BS> columns{};
     std::array<Line, BS+BS-1> down{};
     std::array<Line, BS+BS-1> up{};
 
+    int PtrLocal5Match(Color color, int x, int y) const {
+        return PtrLocalMatch(rows, color == BLACK ? bFive : wFive, x, y)
+        + PtrLocalMatch(columns, color == BLACK ? bFive : wFive, CL_MAP.at({x, y}))
+        + PtrLocalMatch(up, color == BLACK ? bFive : wFive, UP_MAP.at({x, y}))
+        + PtrLocalMatch(down, color == BLACK ? bFive : wFive, DW_MAP.at({x, y}));
+    }
+
     template<typename B>
-    int PtrLocalMatch(const B &board, const Ptr &ptr, int row, int col) const {
-        // TODO test
+    int PtrLocalMatch(const B &board, const Ptr &ptr, const Pt &pt) const {
+        return PtrLocalMatch(board, ptr, pt.first, pt.second);
+    }
+    template<typename B>
+    int PtrLocalMatch(const B &board, const Ptr &ptr, int x, int y) const {
         int count{0};
-        const char *line = board[row];
-        line += std::max(0, col - ptr.len);
+        // NOTE: x, y access here
+        const char *line = board[x];
+//        std::cout << "PLM<" << x << "," << y << ">: " << line;
+        line += std::max(0, y - ptr.len);
+//        std::cout << "  shift >: " << line << std::endl;
         if (!*line)
             return 0;
         const char *match = line;
         do {
             match = strstr(match, ptr.str);
-            if (match && match <= line + col) {
+            if (match && match <= line + y) {
                 count++;
                 match += ptr.len;
             } else
@@ -272,11 +288,11 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const Board& board) {
         os << board.move << std::endl;
 
-        for (int i = BS - 1; i >= 0; --i)
+        for (int row = BS - 1; row >= 0; --row)
         {
-            for (int j = 0; j < BS; ++j)
+            for (int col = 0; col < BS; ++col)
             {
-                switch (board.getToken(i, j)) {
+                switch (board.getToken(row, col)) {
                     case Board::EMPTY:
                         os << "_";
                         break;

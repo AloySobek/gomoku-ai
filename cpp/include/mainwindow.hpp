@@ -51,6 +51,7 @@ public slots:
     void onActionShowUnderCapture();
     void onActionShowTowFreeThree();
     void reset();
+    void quit();
 };
 
 #endif // MAINWINDOW_H

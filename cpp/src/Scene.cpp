@@ -1,6 +1,7 @@
 #include "Token.hpp"
 #include "Scene.hpp"
 #include "Patterns.hpp"
+#include <QApplication>
 
 void Scene::drawBackground(QPainter *painter, const QRectF &rect) {
     QGraphicsScene::drawBackground(painter, rect);
@@ -91,8 +92,10 @@ Scene::TokenColor Scene::tokenColorFromInt(int v) {
             return Scene::BLACK;
         case 2:
             return Scene::WHITE;
-        default:
+        case 0:
             return Scene::EMPTY;
+        default:
+            throw std::runtime_error("tokenColorFromInt unknown int value!");
     }
 }
 
@@ -133,7 +136,8 @@ void Scene::onTokenClicked(Token *token, QGraphicsSceneMouseEvent *event) {
         game->setToken(token->x, token->y, token->def.color);
         token->update();
         reset();
-    } else if (pvpMode) {
+        return;
+    } else if (pvpMode && game->result() == Board::NO_RESULT) {
         if (!game->getToken(token->x, token->y))
         {
             if (lastPredictedMove.v == BLACK)
@@ -149,7 +153,7 @@ void Scene::onTokenClicked(Token *token, QGraphicsSceneMouseEvent *event) {
             reset();
             getToken(lastPredictedMove.x, lastPredictedMove.y)->def.highlight = Qt::darkRed;
         }
-    } else {
+    } else if (game->result() == Board::NO_RESULT) {
         if (!game->getToken(token->x, token->y))
         {
             token->def.color = playAs;
@@ -190,4 +194,24 @@ void Scene::startGame() {
         getToken(BOARD_SIZE/2, BOARD_SIZE/2)->def.color = BLACK;
         getToken(BOARD_SIZE/2, BOARD_SIZE/2)->update();
     }
+}
+
+void Scene::onGameFinished() {
+    WinDialog dlg;
+    switch (game->result()) {
+        case Board::WHITE_WIN:
+            dlg.asWhiteWin();
+            break;
+        case Board::BLACK_WIN:
+            dlg.asBlackWin();
+            break;
+        case Board::DRAW:
+            dlg.asDraw();
+            break;
+        default:
+            throw std::runtime_error("onGameFinished called when game is still running!");
+    }
+    dlg.exec();
+    qDebug() << "Game finished, exiting";
+    emit finished();
 }

@@ -49,7 +49,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::onActionExit() {
     qDebug() << "onActionExit" << this;
-    qApp->quit(); // NOLINT(cppcoreguidelines-pro-type-static-cast-downcast)
+    exit(0);
 }
 
 bool MainWindow::isDevMode() {
@@ -109,7 +109,7 @@ void MainWindow::onActionLoad() {
         }
         y++;
     }
-    qDebug() << obj;
+    scene->game->board.print();
 }
 
 void MainWindow::onActionSave() {
@@ -154,8 +154,10 @@ void MainWindow::SetAiTitle() {
                 "<p>Cache count: %2 </p>"
                 "<p>Cache hit count: %3 </p>"
                 "<p>Prune count: %4 </p>"
-                "<p>Nodes count: %5 </p>"
-                "<p>Game in dev mode: %6 </p>"
+                "<p>Node count: %5 </p>"
+                "<p>Black captures: %6 </p>"
+                "<p>White captures: %7 </p>"
+                "<p>Game in dev mode: %8 </p>"
                 "</body></html>"
         )
         .arg(
@@ -164,6 +166,8 @@ void MainWindow::SetAiTitle() {
                 QString::number(scene->game->board.cache_hit_count),
                 QString::number(scene->game->board.pruned_count),
                 QString::number(scene->game->board.nodes_count),
+                QString::number(scene->game->board.black_captures_count),
+                QString::number(scene->game->board.white_captures_count),
                 scene->devMode ? "<span style=\" color:#cc0000;\">True</span>" : "False"
         )
     );
@@ -289,25 +293,9 @@ void MainWindow::onActionShowWin() {
     for (int y = 0; y < GSIZE; ++y) {
         for (int x = 0; x < GSIZE; ++x) {
             auto t = scene->getToken(x, y);
-            if (game->getToken(x, y))
+            if (!game->getToken(x, y))
                 continue;
-            auto match = false;
-            for (const auto &dxy : ALL_DIRS) {
-                char flat[BOARD_SIZE];
-                Patterns::getFlat(
-                        x, y,
-                        dxy[0], dxy[1],
-                        Scene::WHITE, 4,
-                        game->board.black_board,
-                        game->board.white_board,
-                        flat
-                );
-                if (Patterns::isWin(Scene::WHITE, flat)) {
-                    match = true;
-                    break;
-                }
-            }
-
+            auto match = game->board.PtrLocal5Match(Board::BLACK, x, y);
             t->setDef({
                               t->def.color,
                               QColor(!match ? Qt::transparent : Qt::yellow),
@@ -417,4 +405,9 @@ void MainWindow::onActionShowTowFreeThree() {
         }
     }
     scene->update();
+}
+
+void MainWindow::quit() {
+    qDebug() << "quit" << this;
+    exit(0);
 }

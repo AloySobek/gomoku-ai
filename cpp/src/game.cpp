@@ -37,3 +37,7 @@ void Game::reset()
 {
     board.reset();
 }
+
+Board::Result Game::result() {
+    return board.result;
+}

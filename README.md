@@ -1,3 +1,10 @@
+# Gomoku AI
+
+AI agent for [Gomoku](https://en.wikipedia.org/wiki/Gomoku) game using minimax alpha-beta pruning algorithm.
+Advanced board rendering, done with Python and PyGame
+
+## Requirements
+
 Install PyPy
 
 https://www.pypy.org/download.html
@@ -15,6 +22,8 @@ pip install -r requirements.txt
 pypy3 main.py
 ```
 
+## Usage
+
 Hotkeys:
 
 `Ctrl + Shift + d` - enter dev mode
@@ -30,6 +39,6 @@ Hotkeys:
 
 `export DEBUG=1` - for debug logging
 
-Minimax with alpha-beta pruning
+## Additional references
 
-https://medium.com/@LukeASalamone/creating-an-ai-for-gomoku-28a4c84c7a52
+[Minimax with alpha-beta pruning](https://medium.com/@LukeASalamone/creating-an-ai-for-gomoku-28a4c84c7a52)
